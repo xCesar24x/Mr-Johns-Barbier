@@ -96,12 +96,12 @@ export default function History() {
             
             <div className="mt-12 flex items-center gap-10">
               <div className="text-center">
-                <span className="block text-4xl font-serif text-gold">25+</span>
-                <span className="text-[10px] uppercase tracking-widest text-charcoal/60 font-bold">Años de Maestría</span>
+                <span className="block text-4xl font-serif text-gold">+15</span>
+                <span className="text-[10px] uppercase tracking-widest text-charcoal/60 font-bold">Años de Experiencia</span>
               </div>
               <div className="w-px h-12 bg-gold/20" />
               <div className="text-center">
-                <span className="block text-4xl font-serif text-gold">10k+</span>
+                <span className="block text-4xl font-serif text-gold">+500</span>
                 <span className="text-[10px] uppercase tracking-widest text-charcoal/60 font-bold">Clientes Satisfechos</span>
               </div>
               <div className="w-px h-12 bg-gold/20" />
