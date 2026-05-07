@@ -4,28 +4,35 @@ import { prefixPath } from "@/lib/utils";
 
 export default function LogoSeal({ className = "" }: { className?: string }) {
   return (
-    <div className={`relative w-40 h-40 md:w-56 md:h-56 flex items-center justify-center ${className}`}>
-      {/* Subtle background glow instead of hard rings */}
-      <div className="absolute inset-0 bg-gold/5 blur-3xl rounded-full" />
+    <div className={`relative w-48 h-48 md:w-64 md:h-64 flex items-center justify-center ${className}`}>
+      {/* Subtle background glow */}
+      <div className="absolute inset-0 bg-gold/10 blur-[80px] rounded-full" />
       
-      {/* The actual logo image - now without forced rounding as the user provided a 'sin fondo' version */}
-      <div className="relative w-full h-full p-2">
+      {/* 
+        Option 1: 'Sello Blanco' effect 
+        - brightness(0) invert(1) makes the dark parts white.
+        - contrast(200%) makes it sharper.
+        - mix-blend-mode: screen hides any black areas (like the inverted background).
+      */}
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 1 }}
+        className="relative w-full h-full mix-blend-screen"
+        style={{ 
+          filter: "brightness(0) invert(1) contrast(150%)",
+        }}
+      >
         <Image 
           src={prefixPath("/images/logo.png")} 
           alt="Mr. John's Logo" 
           fill
-          className="object-contain"
+          className="object-contain p-2"
           priority
         />
-      </div>
+      </motion.div>
       
-      {/* Minimal decorative element */}
-      <motion.div 
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 1 }}
-        className="absolute -inset-2 border border-gold/10 rounded-full pointer-events-none" 
-      />
+      {/* Decorative floating particles or minimal frame could go here if needed */}
     </div>
   );
 }

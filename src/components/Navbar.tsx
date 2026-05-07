@@ -42,7 +42,8 @@ export default function Navbar() {
                 alt="Mr. John's Logo" 
                 width={56} 
                 height={56}
-                className="object-contain"
+                className="object-contain mix-blend-screen"
+                style={{ filter: "brightness(0) invert(1) contrast(150%)" }}
               />
               <span className="font-serif text-xl tracking-widest text-gold font-bold hidden sm:block">
                 MR. JOHN'S
