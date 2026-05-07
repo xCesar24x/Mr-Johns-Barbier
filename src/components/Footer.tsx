@@ -87,9 +87,16 @@ export default function Footer() {
           <div>
             <h4 className="text-gold font-serif text-xl mb-6">Contacto</h4>
             <ul className="space-y-4 font-sans text-parchment/60">
-              <li className="flex items-start gap-3">
-                <MapPin size={18} className="text-gold shrink-0" />
-                <span>San Ramón, Alajuela, Costa Rica.<br/>Frente al parque central.</span>
+              <li className="flex items-start gap-3 group">
+                <MapPin size={18} className="text-gold shrink-0 group-hover:scale-110 transition-transform" />
+                <a 
+                  href="https://maps.app.goo.gl/nSaBNxD8uBdS4fx39" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="hover:text-gold transition-colors"
+                >
+                  San Ramón, Alajuela, Costa Rica.<br/>Frente al parque central.
+                </a>
               </li>
               <li className="flex items-center gap-3">
                 <Phone size={18} className="text-gold shrink-0" />

@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import Image from "next/image";
+import { MapPin } from "lucide-react";
 import { prefixPath } from "@/lib/utils";
 
 export default function History() {
@@ -56,8 +57,19 @@ export default function History() {
                 Durante más de 25 años, hemos sido más que una barbería; somos un santuario para el hombre que busca un momento de distinción, una charla amena y un servicio impecable que honre la tradición artesanal.
               </p>
               <p className="font-serif italic text-xl text-bronze border-l-4 border-gold pl-6 py-2">
-                "La calidad no es un acto, es un hábito que cultivamos en cada corte, en cada afeitado, en cada detalle."
+                "La calidad no es un acto, es un habitó que cultivamos en cada corte, en cada afeitado, en cada detalle."
               </p>
+              <div className="pt-4">
+                <a 
+                  href="https://maps.app.goo.gl/nSaBNxD8uBdS4fx39" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 text-gold font-bold uppercase tracking-widest text-sm hover:translate-x-2 transition-transform group"
+                >
+                  <MapPin size={18} className="group-hover:animate-bounce" />
+                  Cómo llegar • Ver en Maps
+                </a>
+              </div>
             </div>
             
             <div className="mt-10 flex items-center gap-8">
