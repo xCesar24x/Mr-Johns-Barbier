@@ -43,7 +43,7 @@ export default function Navbar() {
                 width={56} 
                 height={56}
                 className="object-contain mix-blend-screen"
-                style={{ filter: "brightness(0) invert(1) contrast(150%)" }}
+                style={{ filter: "invert(1) grayscale(1) brightness(1.2)" }}
               />
               <span className="font-serif text-xl tracking-widest text-gold font-bold hidden sm:block">
                 MR. JOHN'S

@@ -32,7 +32,7 @@ export default function Footer() {
                   alt="Mr. John's Logo" 
                   fill
                   className="object-contain mix-blend-screen"
-                  style={{ filter: "brightness(0) invert(1) contrast(150%)" }}
+                  style={{ filter: "invert(1) grayscale(1) brightness(1.2)" }}
                 />
               </div>
               <span className="font-serif text-2xl tracking-widest text-gold font-bold">
