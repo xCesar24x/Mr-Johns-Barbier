@@ -1,37 +1,55 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Scissors, User, Zap, Sparkles } from "lucide-react";
+import { Scissors, User, Zap, Sparkles, Smile, Droplets, Target } from "lucide-react";
 import { prefixPath } from "@/lib/utils";
 
 const services = [
   {
-    title: "Corte de Cabello",
-    description: "Técnica clásica y moderna adaptada a tu fisionomía y estilo personal.",
-    price: "₡10,000",
+    title: "Corte",
+    description: "Corte de cabello profesional con asesoría de imagen personalizada.",
+    price: "₡6,000",
     icon: <Scissors className="w-8 h-8" />,
     image: "/images/haircut.png"
   },
   {
-    title: "Barba Tradicional",
-    description: "Ritual de toalla caliente, aceites esenciales y navaja para un acabado perfecto.",
-    price: "₡8,000",
+    title: "Barba",
+    description: "Diseño y perfilado de barba con ritual de toalla caliente.",
+    price: "₡5,000",
     icon: <User className="w-8 h-8" />,
     image: "/images/beard.png"
   },
   {
+    title: "Corte y Barba",
+    description: "Nuestro servicio estrella para el caballero que cuida cada detalle.",
+    price: "₡9,000",
+    icon: <Zap className="w-8 h-8" />,
+    image: "/images/vip.png"
+  },
+  {
     title: "Limpieza Facial",
-    description: "Tratamiento revitalizante para la piel del hombre con productos premium.",
-    price: "₡12,000",
+    description: "Tratamiento profundo para revitalizar y limpiar la piel del rostro.",
+    price: "₡10,000",
     icon: <Sparkles className="w-8 h-8" />,
     image: "/images/facial.png"
   },
   {
-    title: "Combo VIP",
-    description: "Experiencia completa: Corte, Barba, Exfoliación y bebida de cortesía.",
-    price: "₡25,000",
-    icon: <Zap className="w-8 h-8" />,
-    image: "/images/vip.png"
+    title: "Keratina",
+    description: "Tratamiento alisador y reparador para un cabello impecable.",
+    price: "₡20,000",
+    icon: <Droplets className="w-8 h-8" />,
+  },
+  {
+    title: "Cera Depilación",
+    description: "Eliminación de vello no deseado con técnica suave y efectiva.",
+    price: "₡2,000",
+    icon: <Target className="w-8 h-8" />,
+  },
+  {
+    title: "Cejas",
+    description: "Perfilado y definición de cejas para un marco facial perfecto.",
+    price: "₡1,000",
+    icon: <Smile className="w-8 h-8" />,
   },
 ];
 
@@ -47,7 +65,7 @@ export default function Services() {
             viewport={{ once: true }}
             className="text-gold font-sans tracking-[0.3em] uppercase text-sm mb-4 block font-semibold"
           >
-            Servicios Premium
+            Servicios & Precios
           </motion.span>
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
@@ -67,7 +85,7 @@ export default function Services() {
           />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
           {services.map((service, index) => (
             <motion.div
               key={service.title}
@@ -90,14 +108,14 @@ export default function Services() {
                 {service.title}
               </h3>
               
-              <p className="text-parchment/60 mb-8 font-sans leading-relaxed flex-grow">
+              <p className="text-parchment/60 mb-8 font-sans text-sm leading-relaxed flex-grow">
                 {service.description}
               </p>
               
               <div className="flex justify-between items-center pt-6 border-t border-white/10">
                 <span className="text-xl font-serif text-gold font-bold">{service.price}</span>
                 <button className="text-xs uppercase tracking-widest text-parchment hover:text-gold transition-colors font-bold">
-                  Ver Detalles
+                  Reservar
                 </button>
               </div>
             </motion.div>
@@ -105,7 +123,7 @@ export default function Services() {
         </div>
 
         <div className="mt-20 text-center">
-          <p className="text-parchment/40 font-sans italic">
+          <p className="text-parchment/40 font-sans italic text-sm">
             * Todos nuestros servicios incluyen asesoría de imagen personalizada y productos de cuidado profesional.
           </p>
         </div>
