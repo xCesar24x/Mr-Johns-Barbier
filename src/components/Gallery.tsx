@@ -6,7 +6,6 @@ import { prefixPath } from "@/lib/utils";
 
 const images = [
   { src: "/images/gal-new-1.webp", alt: "Trabajo en Barbería", size: "large" },
-  { src: "/images/gal-new-2.webp", alt: "Detalle de corte", size: "small" },
   { src: "/images/gal-new-3.webp", alt: "Estilo Gentlemen's", size: "small" },
   { src: "/images/gal-new-4.webp", alt: "Ambiente Premium", size: "medium" },
   { src: "/images/gal-new-5.webp", alt: "Cuidado de barba", size: "small" },
