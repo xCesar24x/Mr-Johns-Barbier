@@ -14,7 +14,6 @@ const images = [
   { src: "/images/gal-new-8.webp", alt: "Técnica de navaja", size: "small" },
   { src: "/images/gal-new-9.webp", alt: "Acabados perfectos", size: "small" },
   { src: "/images/gal-new-10.webp", alt: "Tradición viva", size: "large" },
-  { src: "/images/gal-new-11.webp", alt: "Jonathan en acción", size: "medium" },
 ];
 
 export default function Gallery() {
