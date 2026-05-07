@@ -129,16 +129,16 @@ export default function Footer() {
 
         </div>
 
-        <div className="py-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4 text-[10px] uppercase tracking-[0.3em] text-parchment/30 font-bold">
+        <div className="py-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4 text-xs uppercase tracking-[0.3em] text-parchment/30 font-bold">
           <p>© {currentYear} MR. JOHN'S GENTLEMEN'S BARBERÍA. TODOS LOS DERECHOS RESERVADOS.</p>
           <a 
             href="https://www.instagram.com/rutadigitalcr/" 
             target="_blank" 
             rel="noopener noreferrer"
-            className="flex items-center gap-2 hover:text-gold transition-colors group"
+            className="flex items-center gap-3 hover:text-gold transition-colors group"
           >
-            <span>Powered By Ruta Digital</span>
-            <div className="relative w-5 h-5 opacity-50 group-hover:opacity-100 transition-opacity">
+            <span className="text-sm">Desarrollado por Ruta Digital</span>
+            <div className="relative w-8 h-8 opacity-60 group-hover:opacity-100 transition-opacity">
               <Image 
                 src={prefixPath("/images/ruta-digital-logo.png")} 
                 alt="Ruta Digital" 
