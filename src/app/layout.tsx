@@ -23,8 +23,20 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const isProd = process.env.NODE_ENV === 'production' || process.env.GITHUB_ACTIONS === 'true';
+  const isVercel = process.env.VERCEL === 'true';
+  const base = (isProd && !isVercel) ? '/Mr-Johns-Barbier' : '';
+
   return (
     <html lang="es" className={`${playfair.variable} ${montserrat.variable} dark`}>
+      <head>
+        <style dangerouslySetInnerHTML={{ __html: `
+          :root {
+            --texture-wood: url('${base}/images/dark-wood-texture.png');
+            --texture-leather: url('${base}/images/leather-texture.png');
+          }
+        `}} />
+      </head>
       <body className="bg-charcoal text-parchment font-sans antialiased noise relative overflow-x-hidden">
         {children}
       </body>
