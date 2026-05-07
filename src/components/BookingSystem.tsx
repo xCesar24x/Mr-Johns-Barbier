@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { format, addDays, startOfToday, isBefore, isSameDay, setHours, setMinutes, startOfDay } from "date-fns";
+import { format, addDays, startOfToday, isBefore, isSameDay, setHours, setMinutes, startOfDay, isToday } from "date-fns";
 import { es } from "date-fns/locale";
 import { Calendar as CalendarIcon, Clock, User, Mail, CheckCircle2, ChevronRight, ChevronLeft, Scissors } from "lucide-react";
 import * as Dialog from "@radix-ui/react-dialog";
@@ -27,6 +27,8 @@ const realServices = [
 export default function BookingSystem() {
   const [selectedDate, setSelectedDate] = useState<Date>(startOfToday());
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
+  const [now, setNow] = useState<Date>(new Date());
+  
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -35,6 +37,13 @@ export default function BookingSystem() {
   });
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(new Date());
+
+  // Update current time to ensure proper comparison
+  useEffect(() => {
+    setNow(new Date());
+    const timer = setInterval(() => setNow(new Date()), 60000);
+    return () => clearInterval(timer);
+  }, []);
 
   const today = startOfToday();
   
@@ -48,14 +57,25 @@ export default function BookingSystem() {
   }, []);
 
   const isTimeDisabled = (time: string) => {
-    if (!isSameDay(selectedDate, today)) return false;
-    const [hours, minutes] = time.split(':').map(Number);
-    const slotDate = setMinutes(setHours(startOfDay(selectedDate), hours), minutes);
-    return isBefore(slotDate, new Date());
+    // If selecting a future day, all slots are available
+    if (!isSameDay(selectedDate, today) && isBefore(today, selectedDate)) {
+      return false;
+    }
+    
+    // If selecting today, only future slots are available
+    if (isSameDay(selectedDate, today)) {
+      const [hours, minutes] = time.split(':').map(Number);
+      const slotDate = new Date(selectedDate);
+      slotDate.setHours(hours, minutes, 0, 0);
+      return slotDate.getTime() < now.getTime();
+    }
+    
+    // Past days are disabled anyway by the calendar selection
+    return isBefore(selectedDate, today);
   };
 
   const handleDateSelect = (date: Date) => {
-    if (isBefore(date, today)) return;
+    if (isBefore(date, today) && !isSameDay(date, today)) return;
     setSelectedDate(date);
     setSelectedTime(null);
   };
