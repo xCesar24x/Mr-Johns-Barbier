@@ -6,6 +6,7 @@ const nextConfig: NextConfig = {
   output: 'export',
   // Reemplaza 'Mr-Johns-Barbier' con el nombre exacto de tu repo si es necesario
   basePath: isProd ? '/Mr-Johns-Barbier' : '',
+  assetPrefix: isProd ? '/Mr-Johns-Barbier/' : '',
   images: {
     unoptimized: true,
   },

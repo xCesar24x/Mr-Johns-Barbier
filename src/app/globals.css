@@ -52,13 +52,13 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Textures */
 .texture-wood {
-  background-image: url('/images/dark-wood-texture.png');
+  background-image: url('/Mr-Johns-Barbier/images/dark-wood-texture.png');
   background-size: cover;
   background-position: center;
 }
 
 .texture-leather {
-  background-image: url('/images/leather-texture.png');
+  background-image: url('/Mr-Johns-Barbier/images/leather-texture.png');
   background-size: cover;
   background-position: center;
 }
