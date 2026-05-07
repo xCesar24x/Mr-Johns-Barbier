@@ -130,7 +130,21 @@ export default function Footer() {
               </li>
             </ul>
           </div>
+        </div>
 
+        {/* Mini Map Section */}
+        <div className="mb-20 rounded-sm overflow-hidden border border-gold/20 shadow-2xl h-[300px] relative grayscale hover:grayscale-0 transition-all duration-700">
+          <iframe 
+            src="https://www.google.com/maps/embed?pb=!1m13!1m8!1m3!1d3928.0988751269915!2d-84.4681118!3d10.0909841!3m2!1i1024!2i768!4f13.1!3m2!1m1!2s!5e0!3m2!1ses-419!2scr!4v1778168337560!5m2!1ses-419!2scr"
+            width="100%" 
+            height="100%" 
+            style={{ border: 0 }} 
+            allowFullScreen={true} 
+            loading="lazy" 
+            referrerPolicy="no-referrer-when-downgrade"
+            className="opacity-60 hover:opacity-100 transition-opacity"
+          />
+          <div className="absolute inset-0 pointer-events-none border-[12px] border-charcoal/30" />
         </div>
 
         <div className="py-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4 text-xs uppercase tracking-widest text-parchment/40 font-bold">
