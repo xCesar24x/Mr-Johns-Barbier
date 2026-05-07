@@ -73,7 +73,7 @@ export default function Footer() {
               <li className="flex items-start gap-3 group">
                 <MapPin size={18} className="text-gold shrink-0 group-hover:scale-110 transition-transform" />
                 <a href="https://maps.app.goo.gl/nSaBNxD8uBdS4fx39" target="_blank" rel="noopener noreferrer" className="hover:text-gold transition-colors leading-relaxed">
-                  San Ramón, Alajuela, Costa Rica.<br/>Frente al parque central.
+                  San Ramón, Alajuela, Costa Rica.
                 </a>
               </li>
               <li className="flex items-center gap-3">
@@ -96,15 +96,15 @@ export default function Footer() {
                   <Clock size={16} className="text-gold" />
                   <span>Lun - Vie</span>
                 </div>
-                <span className="font-bold">9:00 - 19:00</span>
+                <span className="font-bold">8:00 - 19:00</span>
               </li>
               <li className="flex justify-between items-center">
                 <span>Sábados</span>
-                <span className="font-bold">8:00 - 18:00</span>
+                <span className="text-gold font-bold italic uppercase text-xs">Cerrado</span>
               </li>
               <li className="flex justify-between items-center">
                 <span>Domingos</span>
-                <span className="text-gold font-bold italic uppercase text-xs">Cerrado</span>
+                <span className="font-bold">7:00 - 12:00</span>
               </li>
             </ul>
           </div>

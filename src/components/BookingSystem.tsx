@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { format, addDays, startOfToday, isBefore, isSameDay, setHours, setMinutes, startOfDay } from "date-fns";
+import { format, addDays, startOfToday, isBefore, isSameDay, setHours, setMinutes, startOfDay, getDay } from "date-fns";
 import { es } from "date-fns/locale";
 import { Calendar as CalendarIcon, Clock, User, Mail, CheckCircle2, ChevronRight, ChevronLeft, Scissors } from "lucide-react";
 import * as Dialog from "@radix-ui/react-dialog";
@@ -46,14 +46,26 @@ export default function BookingSystem() {
   
   const timeSlots = useMemo(() => {
     const slots = [];
-    for (let h = 8; h <= 19; h++) {
+    const dayOfWeek = getDay(selectedDate); // 0 = Sun, 6 = Sat
+
+    let startHour = 8;
+    let endHour = 19;
+
+    if (dayOfWeek === 0) { // Sunday
+      startHour = 7;
+      endHour = 12;
+    } else if (dayOfWeek === 6) { // Saturday
+      return []; // No slots for Saturday
+    }
+
+    for (let h = startHour; h <= endHour; h++) {
       slots.push(`${h}:00`);
+      if (h === endHour && dayOfWeek === 0) break; // Don't add 12:30 on Sunday
       slots.push(`${h}:30`);
     }
     return slots;
-  }, []);
+  }, [selectedDate]);
 
-  // Simple and direct disabled check
   const isTimeDisabled = (time: string) => {
     if (!isClient) return false;
     
@@ -78,6 +90,13 @@ export default function BookingSystem() {
   const handleDateSelect = (date: Date) => {
     setSelectedDate(date);
     setSelectedTime(null);
+  };
+
+  const isDayDisabled = (date: Date) => {
+    const dayOfWeek = getDay(date);
+    const isPast = isBefore(date, today) && !isSameDay(date, today);
+    const isSaturday = dayOfWeek === 6;
+    return isPast || isSaturday;
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -155,7 +174,7 @@ export default function BookingSystem() {
               </div>
               <div className="grid grid-cols-7 gap-2">
                 {daysInMonth.map((day, idx) => {
-                  const isDisabled = isBefore(day.date, today) && !isSameDay(day.date, today);
+                  const isDisabled = isDayDisabled(day.date);
                   const isSelected = isSameDay(day.date, selectedDate);
                   return (
                     <button
@@ -169,6 +188,7 @@ export default function BookingSystem() {
                   );
                 })}
               </div>
+              <p className="mt-4 text-[10px] text-parchment/40 uppercase tracking-widest text-center font-bold">Nota: Los sábados no se labora.</p>
             </div>
 
             <div className="glass p-6 rounded-sm">
@@ -177,20 +197,24 @@ export default function BookingSystem() {
                 Hora Disponible
               </h3>
               <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
-                {timeSlots.map(time => {
-                  const disabled = isTimeDisabled(time);
-                  const selected = selectedTime === time;
-                  return (
-                    <button
-                      key={time}
-                      disabled={disabled}
-                      onClick={() => setSelectedTime(time)}
-                      className={`py-3 rounded-sm text-xs font-bold transition-all border ${selected ? 'bg-gold border-gold text-charcoal shadow-lg scale-105' : 'border-white/10 text-parchment/60 hover:border-gold hover:text-gold'} ${disabled ? 'opacity-20 cursor-not-allowed border-transparent' : ''}`}
-                    >
-                      {time}
-                    </button>
-                  );
-                })}
+                {timeSlots.length > 0 ? (
+                  timeSlots.map(time => {
+                    const disabled = isTimeDisabled(time);
+                    const selected = selectedTime === time;
+                    return (
+                      <button
+                        key={time}
+                        disabled={disabled}
+                        onClick={() => setSelectedTime(time)}
+                        className={`py-3 rounded-sm text-xs font-bold transition-all border ${selected ? 'bg-gold border-gold text-charcoal shadow-lg scale-105' : 'border-white/10 text-parchment/60 hover:border-gold hover:text-gold'} ${disabled ? 'opacity-20 cursor-not-allowed border-transparent' : ''}`}
+                      >
+                        {time}
+                      </button>
+                    );
+                  })
+                ) : (
+                  <div className="col-span-full py-8 text-center text-parchment/40 italic">No hay horarios disponibles para este día.</div>
+                )}
               </div>
             </div>
           </div>
