@@ -31,8 +31,7 @@ export default function Footer() {
                   src={prefixPath("/images/logo.png")} 
                   alt="Mr. John's Logo" 
                   fill
-                  className="object-contain mix-blend-screen"
-                  style={{ filter: "invert(1) grayscale(1) brightness(1.2)" }}
+                  className="object-contain rounded-full"
                 />
               </div>
               <span className="font-serif text-2xl tracking-widest text-gold font-bold">

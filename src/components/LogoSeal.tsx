@@ -4,27 +4,27 @@ import { prefixPath } from "@/lib/utils";
 
 export default function LogoSeal({ className = "" }: { className?: string }) {
   return (
-    <div className={`relative w-48 h-48 md:w-64 md:h-64 flex items-center justify-center ${className}`}>
-      {/* Subtle background glow */}
-      <div className="absolute inset-0 bg-gold/10 blur-[80px] rounded-full" />
-      
+    <div className={`relative w-40 h-40 md:w-56 md:h-56 flex items-center justify-center ${className}`}>
+      {/* Outer rings animation */}
       <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 1 }}
-        className="relative w-full h-full mix-blend-screen"
-        style={{ 
-          filter: "invert(1) grayscale(1) brightness(1.2)",
-        }}
-      >
+        animate={{ rotate: 360 }}
+        transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+        className="absolute inset-0 border-2 border-gold/30 rounded-full border-dashed"
+      />
+      
+      {/* The actual logo image */}
+      <div className="relative w-full h-full p-4">
         <Image 
           src={prefixPath("/images/logo.png")} 
           alt="Mr. John's Logo" 
           fill
-          className="object-contain p-2"
+          className="object-contain rounded-full shadow-2xl"
           priority
         />
-      </motion.div>
+      </div>
+      
+      {/* Decorative pulse ring */}
+      <div className="absolute inset-0 border-4 border-gold rounded-full opacity-10 animate-pulse" />
     </div>
   );
 }
