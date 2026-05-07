@@ -5,6 +5,7 @@ import Services from "@/components/Services";
 import Gallery from "@/components/Gallery";
 import BookingSystem from "@/components/BookingSystem";
 import Footer from "@/components/Footer";
+import FloatingWhatsApp from "@/components/FloatingWhatsApp";
 
 export default function Home() {
   return (
@@ -16,6 +17,7 @@ export default function Home() {
       <Gallery />
       <BookingSystem />
       <Footer />
+      <FloatingWhatsApp />
     </main>
   );
 }
