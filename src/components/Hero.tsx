@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
 import LogoSeal from "./LogoSeal";
+import { prefixPath } from "@/lib/utils";
 
 export default function Hero() {
   return (
@@ -16,7 +17,7 @@ export default function Hero() {
       >
         <div 
           className="w-full h-full bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: "url('/Mr-Johns-Barbier/images/hero.png')" }}
+          style={{ backgroundImage: `url('${prefixPath("/images/hero.png")}')` }}
         />
         {/* Overlay */}
         <div className="absolute inset-0 bg-charcoal/60 bg-gradient-to-b from-charcoal/80 via-charcoal/40 to-charcoal" />

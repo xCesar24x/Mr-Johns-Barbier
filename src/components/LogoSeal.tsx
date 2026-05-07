@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import Image from "next/image";
+import { prefixPath } from "@/lib/utils";
 
 export default function LogoSeal({ className = "" }: { className?: string }) {
   return (
@@ -14,7 +15,7 @@ export default function LogoSeal({ className = "" }: { className?: string }) {
       {/* The actual logo image */}
       <div className="relative w-full h-full p-4">
         <Image 
-          src="/images/logo.png" 
+          src={prefixPath("/images/logo.png")} 
           alt="Mr. John's Logo" 
           fill
           className="object-contain rounded-full shadow-2xl"

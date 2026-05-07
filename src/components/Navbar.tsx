@@ -3,8 +3,9 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Menu, X, Scissors } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { prefixPath } from "@/lib/utils";
 
 const navLinks = [
   { name: "Inicio", href: "#inicio" },
@@ -37,9 +38,9 @@ export default function Navbar() {
           <div className="flex items-center">
             <Link href="/" className="flex items-center gap-3">
               <Image 
-                src="/images/logo.png" 
+                src={prefixPath("/images/logo.png")} 
                 alt="Mr. John's Logo" 
-                width={56}
+                width={56} 
                 height={56}
                 className="object-contain rounded-full shadow-lg"
               />

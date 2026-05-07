@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import Image from "next/image";
+import { prefixPath } from "@/lib/utils";
 
 export default function History() {
   return (
@@ -21,7 +22,7 @@ export default function History() {
           >
             <div className="relative z-10 rounded-sm overflow-hidden shadow-2xl border-8 border-white">
               <Image 
-                src="/images/hero.png" 
+                src={prefixPath("/images/hero.png")} 
                 alt="Legado Mr. John's" 
                 width={600} 
                 height={800}

@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { Camera } from "lucide-react";
+import { prefixPath } from "@/lib/utils";
 
 const images = [
   { src: "/images/hero.png", alt: "Corte clásico", size: "large" },
@@ -70,7 +71,7 @@ export default function Gallery() {
               `}
             >
               <Image 
-                src={img.src} 
+                src={prefixPath(img.src)} 
                 alt={img.alt} 
                 fill 
                 className="object-cover transition-transform duration-700 group-hover:scale-110"

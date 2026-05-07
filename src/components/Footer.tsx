@@ -3,6 +3,7 @@
 import { MessageSquare, Phone, MapPin, Mail, Clock, Scissors } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import { prefixPath } from "@/lib/utils";
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -20,7 +21,7 @@ export default function Footer() {
             <Link href="/" className="flex items-center gap-3">
               <div className="relative w-12 h-12">
                 <Image 
-                  src="/images/logo.png" 
+                  src={prefixPath("/images/logo.png")} 
                   alt="Mr. John's Logo" 
                   fill
                   className="object-contain"
@@ -31,7 +32,7 @@ export default function Footer() {
               </span>
             </Link>
             <p className="text-parchment/60 font-sans leading-relaxed">
-              Dedicados al arte de la barbería clásica en San Ramón desde 1995. Elevamos el estándar del cuidado masculino con elegancia y tradición.
+              Dedicados al arte de la barbería clásica desde 1995. Un espacio exclusivo para el caballero que valora la tradición y la distinción.
             </p>
             <div className="flex gap-4">
               <a href="https://www.instagram.com/mrjohnsbarbier" className="w-10 h-10 bg-white/5 rounded-full flex items-center justify-center hover:bg-gold hover:text-charcoal transition-all duration-300">
@@ -73,71 +74,63 @@ export default function Footer() {
           {/* Quick Links */}
           <div>
             <h4 className="text-gold font-serif text-xl mb-6">Navegación</h4>
-            <ul className="space-y-4 text-parchment/60 font-sans uppercase tracking-widest text-xs font-bold">
+            <ul className="space-y-4 font-sans text-sm uppercase tracking-widest">
               <li><Link href="#inicio" className="hover:text-gold transition-colors">Inicio</Link></li>
               <li><Link href="#historia" className="hover:text-gold transition-colors">Historia</Link></li>
               <li><Link href="#servicios" className="hover:text-gold transition-colors">Servicios</Link></li>
               <li><Link href="#galeria" className="hover:text-gold transition-colors">Galería</Link></li>
-              <li><Link href="#reservar" className="hover:text-gold transition-colors">Reservas</Link></li>
+              <li><Link href="#reservar" className="hover:text-gold transition-colors">Citas</Link></li>
             </ul>
           </div>
 
           {/* Contact Info */}
           <div>
             <h4 className="text-gold font-serif text-xl mb-6">Contacto</h4>
-            <ul className="space-y-4">
-              <li className="flex items-start gap-4">
-                <MapPin className="text-gold mt-1 shrink-0" size={18} />
-                <span className="text-parchment/60">San Ramón de Alajuela, <br />Costado Norte del Parque Central.</span>
+            <ul className="space-y-4 font-sans text-parchment/60">
+              <li className="flex items-start gap-3">
+                <MapPin size={18} className="text-gold shrink-0" />
+                <span>San Ramón, Alajuela, Costa Rica.<br/>Frente al parque central.</span>
               </li>
-              <li className="flex items-center gap-4">
-                <Phone className="text-gold shrink-0" size={18} />
-                <span className="text-parchment/60">+506 7242 9342</span>
+              <li className="flex items-center gap-3">
+                <Phone size={18} className="text-gold shrink-0" />
+                <span>+506 7242-9342</span>
               </li>
-              <li className="flex items-center gap-4">
-                <Mail className="text-gold shrink-0" size={18} />
-                <span className="text-parchment/60">info@mrjohns.cr</span>
-              </li>
-              <li className="flex items-start gap-4">
-                <Clock className="text-gold mt-1 shrink-0" size={18} />
-                <span className="text-parchment/60">Lun - Sáb: 8:00 AM - 7:00 PM <br />Dom: Cerrado</span>
+              <li className="flex items-center gap-3">
+                <Mail size={18} className="text-gold shrink-0" />
+                <span>info@mrjohnsbarbier.com</span>
               </li>
             </ul>
           </div>
 
-          {/* Map Integration (Placeholder for Google Maps API) */}
-          <div className="rounded-sm overflow-hidden h-48 md:h-full min-h-[200px] relative border border-gold/20 shadow-2xl">
-            <iframe 
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15715.46554523992!2d-84.478796!3d10.088339!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8fa0435163351f03%3A0xe54e38e15d86b7c5!2sSan%20Ram%C3%B3n%2C%20Alajuela%20Province!5e0!3m2!1sen!2scr!4v1715080000000!5m2!1sen!2scr" 
-              className="w-full h-full border-0 grayscale hover:grayscale-0 transition-all duration-500" 
-              loading="lazy"
-            ></iframe>
+          {/* Hours */}
+          <div>
+            <h4 className="text-gold font-serif text-xl mb-6">Horario</h4>
+            <ul className="space-y-4 font-sans text-parchment/60">
+              <li className="flex justify-between items-center">
+                <div className="flex items-center gap-2">
+                  <Clock size={16} className="text-gold" />
+                  <span>Lun - Vie</span>
+                </div>
+                <span>9:00 - 19:00</span>
+              </li>
+              <li className="flex justify-between items-center">
+                <span>Sábados</span>
+                <span>8:00 - 18:00</span>
+              </li>
+              <li className="flex justify-between items-center">
+                <span>Domingos</span>
+                <span className="text-gold">Cerrado</span>
+              </li>
+            </ul>
           </div>
 
         </div>
 
-        {/* Bottom Bar */}
-        <div className="py-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4 text-xs uppercase tracking-[0.2em] text-parchment/40">
-          <p>© {currentYear} Mr. John’s Gentlemen's Barbería. Todos los derechos reservados.</p>
-          <div className="flex gap-8">
-            <Link href="#" className="hover:text-gold">Privacidad</Link>
-            <Link href="#" className="hover:text-gold">Términos</Link>
-          </div>
+        <div className="py-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4 text-xs uppercase tracking-widest text-parchment/40 font-bold">
+          <p>© {currentYear} MR. JOHN'S GENTLEMEN'S BARBERÍA. TODOS LOS DERECHOS RESERVADOS.</p>
+          <p>DESARROLLADO CON DISTINCIÓN POR ANTIGRAVITY</p>
         </div>
       </div>
-
-      {/* Floating WhatsApp Button */}
-      <a 
-        href="https://wa.me/50672429342"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="fixed bottom-8 right-8 z-[100] w-14 h-14 bg-[#25D366] text-white rounded-full flex items-center justify-center shadow-2xl hover:scale-110 transition-transform active:scale-95 group"
-      >
-        <MessageSquare size={28} />
-        <span className="absolute right-full mr-4 bg-charcoal text-parchment px-4 py-2 rounded-sm text-xs font-bold whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none border border-gold/20 shadow-xl">
-          ¿Necesitas ayuda?
-        </span>
-      </a>
     </footer>
   );
 }

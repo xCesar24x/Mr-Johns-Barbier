@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Scissors, User, Zap, Sparkles } from "lucide-react";
+import { prefixPath } from "@/lib/utils";
 
 const services = [
   {

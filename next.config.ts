@@ -1,12 +1,10 @@
 import type { NextConfig } from "next";
 
-const isProd = process.env.NODE_ENV === 'production';
+const isProd = process.env.NODE_ENV === 'production' || process.env.GITHUB_ACTIONS === 'true';
 
 const nextConfig: NextConfig = {
   output: 'export',
-  // Reemplaza 'Mr-Johns-Barbier' con el nombre exacto de tu repo si es necesario
   basePath: isProd ? '/Mr-Johns-Barbier' : '',
-  assetPrefix: isProd ? '/Mr-Johns-Barbier/' : '',
   images: {
     unoptimized: true,
   },
