@@ -26,7 +26,7 @@ export default function Footer() {
           {/* Brand & Mission */}
           <div className="space-y-6 lg:col-span-1">
             <Link href="/" className="flex items-center gap-3">
-              <div className="relative w-12 h-12">
+              <div className="relative w-16 h-16">
                 <Image 
                   src={prefixPath("/images/logo.png")} 
                   alt="Mr. John's Logo" 

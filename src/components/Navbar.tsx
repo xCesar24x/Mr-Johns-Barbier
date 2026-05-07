@@ -42,7 +42,7 @@ export default function Navbar() {
                 alt="Mr. John's Logo" 
                 width={56} 
                 height={56}
-                className="object-contain rounded-full shadow-lg"
+                className="object-contain"
               />
               <span className="font-serif text-xl tracking-widest text-gold font-bold hidden sm:block">
                 MR. JOHN'S
