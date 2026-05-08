@@ -23,9 +23,7 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const isProd = process.env.NODE_ENV === 'production' || process.env.GITHUB_ACTIONS === 'true';
-  const isVercel = process.env.VERCEL === 'true';
-  const base = (isProd && !isVercel) ? '/Mr-Johns-Barbier' : '';
+  const base = '';
 
   return (
     <html lang="es" className={`${playfair.variable} ${montserrat.variable} dark`}>

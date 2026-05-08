@@ -5,7 +5,7 @@ const isVercel = process.env.VERCEL === 'true';
 
 const nextConfig: NextConfig = {
   output: isVercel ? undefined : 'export',
-  basePath: isVercel ? '' : (isProd ? '/Mr-Johns-Barbier' : ''),
+  basePath: '',
   images: {
     unoptimized: true,
   },
