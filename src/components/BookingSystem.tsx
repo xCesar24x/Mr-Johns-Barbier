@@ -58,6 +58,8 @@ export default function BookingSystem() {
   // Cargar espacios ocupados cuando cambia la fecha
   useEffect(() => {
     if (isClient) {
+      const fetchOccupied = async () => {
+        setIsLoadingSlots(true);
         try {
           const dateKey = format(selectedDate, 'yyyy-MM-dd');
           const res = await fetch(`/api/bookings/check?date=${dateKey}`);
