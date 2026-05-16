@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { adminDb } from '@/lib/firebaseAdmin';
+
+export const dynamic = 'force-dynamic';
 import { google } from 'googleapis';
 
 export async function POST(request: Request) {

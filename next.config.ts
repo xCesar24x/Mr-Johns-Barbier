@@ -4,8 +4,6 @@ const isProd = process.env.NODE_ENV === 'production' || process.env.GITHUB_ACTIO
 const isVercel = process.env.VERCEL === 'true';
 
 const nextConfig: NextConfig = {
-  output: isVercel ? undefined : 'export',
-  basePath: '',
   images: {
     unoptimized: true,
   },
