@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { format, addDays, startOfToday, isBefore, isSameDay, setHours, setMinutes, startOfDay, getDay } from "date-fns";
+import { format, addDays, startOfToday, isBefore, isSameDay, setHours, setMinutes, startOfDay, getDay, addMinutes } from "date-fns";
 import { es } from "date-fns/locale";
 import { Calendar as CalendarIcon, Clock, User, Mail, CheckCircle2, ChevronRight, ChevronLeft, Scissors } from "lucide-react";
 import * as Dialog from "@radix-ui/react-dialog";
@@ -37,6 +37,7 @@ export default function BookingSystem() {
   });
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
@@ -105,11 +106,48 @@ export default function BookingSystem() {
     setIsPreviewOpen(true);
   };
 
-  const confirmAndSend = () => {
-    const message = `Hola Mr. John's, deseo confirmar mi cita. \n\n💈 *Detalles de la Cita* 💈\n👤 *Nombre:* ${formData.name}\n📅 *Fecha:* ${format(selectedDate, "PPP", { locale: es })}\n⏰ *Hora:* ${selectedTime}\n✂️ *Servicio:* ${formData.service}\n📱 *WhatsApp:* ${formData.whatsapp}`;
-    const encodedMessage = encodeURIComponent(message);
-    window.open(`https://wa.me/50672429342?text=${encodedMessage}`, "_blank");
-    setIsPreviewOpen(false);
+  const confirmAndSend = async () => {
+    setIsSubmitting(true);
+    try {
+      // 1. Sync with Database and Jona's Calendar
+      await fetch('/api/bookings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...formData,
+          date: selectedDate.toISOString(),
+          time: selectedTime
+        })
+      });
+
+      // 2. Open WhatsApp for final confirmation
+      const message = `Hola Mr. John's, deseo confirmar mi cita. \n\n💈 *Detalles de la Cita* 💈\n👤 *Nombre:* ${formData.name}\n📅 *Fecha:* ${format(selectedDate, "PPP", { locale: es })}\n⏰ *Hora:* ${selectedTime}\n✂️ *Servicio:* ${formData.service}\n📱 *WhatsApp:* ${formData.whatsapp}`;
+      const encodedMessage = encodeURIComponent(message);
+      window.open(`https://wa.me/50672429342?text=${encodedMessage}`, "_blank");
+      
+      setIsPreviewOpen(false);
+    } catch (error) {
+      console.error("Booking error:", error);
+      alert("Hubo un error al procesar tu reserva. Por favor intenta de nuevo.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const getGoogleCalendarUrl = () => {
+    if (!selectedTime) return "";
+    const [hours, minutes] = selectedTime.split(':').map(Number);
+    const startDate = setMinutes(setHours(selectedDate, hours), minutes);
+    const endDate = addMinutes(startDate, 30);
+
+    const formatGCal = (date: Date) => date.toISOString().replace(/-|:|\.\d\d\d/g, "");
+    const dates = `${formatGCal(startDate)}/${formatGCal(endDate)}`;
+    
+    const title = `Cita: ${formData.service} - Mr Johns`;
+    const details = `Cita de barbería para ${formData.name}. Servicio: ${formData.service}`;
+    const location = "Mr Johns Barbier, San Ramón, Alajuela";
+
+    return `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${dates}&details=${encodeURIComponent(details)}&location=${encodeURIComponent(location)}`;
   };
 
   const daysInMonth = useMemo(() => {
@@ -287,7 +325,27 @@ export default function BookingSystem() {
                   </div>
                 </div>
                 <div className="space-y-3">
-                  <button onClick={confirmAndSend} className="w-full bg-[#25D366] text-white py-4 rounded-sm font-bold uppercase tracking-widest hover:opacity-90 transition-all flex items-center justify-center gap-3 shadow-lg"><WhatsAppIcon size={20} /> Confirmar por WhatsApp</button>
+                  <button 
+                    onClick={confirmAndSend} 
+                    disabled={isSubmitting}
+                    className={`w-full bg-[#25D366] text-white py-4 rounded-sm font-bold uppercase tracking-widest hover:opacity-90 transition-all flex items-center justify-center gap-3 shadow-lg ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  >
+                    {isSubmitting ? (
+                      <div className="h-5 w-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    ) : (
+                      <>
+                        <WhatsAppIcon size={20} /> Confirmar por WhatsApp
+                      </>
+                    )}
+                  </button>
+                  <a 
+                    href={getGoogleCalendarUrl()} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="w-full bg-white/10 text-charcoal py-3 rounded-sm font-bold uppercase tracking-widest hover:bg-white/20 transition-all flex items-center justify-center gap-3 border border-charcoal/10"
+                  >
+                    <CalendarIcon size={18} /> Agendar en mi Calendario
+                  </a>
                   <button onClick={() => setIsPreviewOpen(false)} className="w-full text-charcoal/60 py-2 text-sm uppercase tracking-widest font-bold hover:text-charcoal transition-colors">Modificar Datos</button>
                 </div>
               </div>
