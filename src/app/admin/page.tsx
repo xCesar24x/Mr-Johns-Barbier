@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { format, startOfToday, isSameDay, addDays } from "date-fns";
 import { es } from "date-fns/locale";
-import { Calendar, Trash2, Power, Scissors, User, Phone, Clock, ChevronLeft, ChevronRight } from "lucide-react";
+import { Calendar, Trash2, Power, Scissors, User, Phone, Clock, ChevronLeft, ChevronRight, TrendingUp, DollarSign, Users } from "lucide-react";
 
 export default function AdminDashboard() {
   const [selectedDate, setSelectedDate] = useState(startOfToday());
@@ -13,6 +13,7 @@ export default function AdminDashboard() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState("");
   const [loginError, setLoginError] = useState(false);
+  const [analytics, setAnalytics] = useState<any>(null);
 
   const fetchDayData = async () => {
     setIsLoading(true);
@@ -21,6 +22,9 @@ export default function AdminDashboard() {
       const data = await res.json();
       setBookings(data.bookings || []);
       setIsDayClosed(data.isClosed || false);
+      if (data.analytics) {
+        setAnalytics(data.analytics);
+      }
     } catch (error) {
       console.error("Error fetching admin data:", error);
     } finally {
@@ -62,6 +66,8 @@ export default function AdminDashboard() {
         body: JSON.stringify({ action: 'cancel-booking', bookingId: id })
       });
       setBookings(bookings.filter(b => b.id !== id));
+      // Refresh analytics after cancellation
+      fetchDayData();
     } catch (error) {
       alert("Error al cancelar");
     }
@@ -112,7 +118,7 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-charcoal texture-leather text-parchment p-4 md:p-8">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-6xl mx-auto">
         
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-center gap-6 mb-12">
@@ -122,7 +128,7 @@ export default function AdminDashboard() {
             </div>
             <div>
               <h1 className="text-3xl font-serif font-bold">Panel de Jona</h1>
-              <p className="text-gold/60 text-xs uppercase tracking-widest font-bold">Gestión de Citas</p>
+              <p className="text-gold/60 text-xs uppercase tracking-widest font-bold">Administración y Analíticas</p>
             </div>
           </div>
 
@@ -140,70 +146,120 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* Action Bar */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          <div className={`glass p-6 rounded-sm flex items-center justify-between border-l-4 ${isDayClosed ? 'border-l-red-500' : 'border-l-green-500'}`}>
-            <div>
-              <h3 className="font-bold text-lg">{isDayClosed ? "Agenda Cerrada" : "Agenda Abierta"}</h3>
-              <p className="text-xs opacity-60">Control de disponibilidad para clientes</p>
+        {/* Analytics Section */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+          <div className="glass p-6 rounded-sm border-b-2 border-b-gold">
+            <div className="flex items-center gap-4 mb-2">
+              <div className="p-2 bg-gold/10 rounded-lg text-gold"><DollarSign size={20} /></div>
+              <p className="text-xs uppercase tracking-widest font-bold opacity-60">Ingresos Totales (Est.)</p>
             </div>
-            <button 
-              onClick={toggleDayStatus}
-              className={`p-4 rounded-full transition-all shadow-lg ${isDayClosed ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'}`}
-            >
-              <Power size={24} className="text-white" />
-            </button>
+            <h3 className="text-3xl font-serif font-bold text-gold">
+              {analytics ? `₡${analytics.totalRevenue.toLocaleString()}` : '...'}
+            </h3>
           </div>
-
-          <div className="glass p-6 rounded-sm flex items-center gap-6 border-l-4 border-l-gold">
-            <div className="text-4xl font-serif text-gold font-bold">{bookings.length}</div>
-            <div>
-              <h3 className="font-bold text-lg">Citas Agendadas</h3>
-              <p className="text-xs opacity-60">Para este día seleccionado</p>
+          <div className="glass p-6 rounded-sm border-b-2 border-b-gold">
+            <div className="flex items-center gap-4 mb-2">
+              <div className="p-2 bg-gold/10 rounded-lg text-gold"><Users size={20} /></div>
+              <p className="text-xs uppercase tracking-widest font-bold opacity-60">Citas Totales</p>
             </div>
+            <h3 className="text-3xl font-serif font-bold text-gold">
+              {analytics ? analytics.totalBookings : '...'}
+            </h3>
+          </div>
+          <div className="glass p-6 rounded-sm border-b-2 border-b-gold">
+            <div className="flex items-center gap-4 mb-2">
+              <div className="p-2 bg-gold/10 rounded-lg text-gold"><TrendingUp size={20} /></div>
+              <p className="text-xs uppercase tracking-widest font-bold opacity-60">Servicio más pedido</p>
+            </div>
+            <h3 className="text-xl font-serif font-bold text-gold truncate">
+              {analytics && analytics.popularServices.length > 0 ? analytics.popularServices[0].name : '...'}
+            </h3>
           </div>
         </div>
 
-        {/* Bookings List */}
-        <div className="space-y-4">
-          <h2 className="text-xl font-serif mb-4 flex items-center gap-2">
-            <Calendar className="text-gold" size={20} />
-            Agenda Detallada
-          </h2>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+          {/* Main List */}
+          <div className="lg:col-span-2 space-y-6">
+            <h2 className="text-xl font-serif flex items-center gap-2">
+              <Calendar className="text-gold" size={20} />
+              Agenda para este día
+            </h2>
 
-          {isLoading ? (
-            <div className="py-20 text-center opacity-40">Cargando agenda...</div>
-          ) : bookings.length > 0 ? (
-            bookings.map((booking) => (
-              <div key={booking.id} className="glass p-5 rounded-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4 hover:border-gold/40 transition-colors group">
-                <div className="flex items-center gap-6">
-                  <div className="text-2xl font-serif font-bold text-gold w-20">
-                    {booking.time}
-                  </div>
-                  <div className="space-y-1">
-                    <div className="font-bold text-lg flex items-center gap-2">
-                      <User size={16} className="text-gold/40" />
-                      {booking.name}
+            <div className="space-y-4">
+              {isLoading ? (
+                <div className="py-20 text-center opacity-40">Cargando agenda...</div>
+              ) : bookings.length > 0 ? (
+                bookings.map((booking) => (
+                  <div key={booking.id} className="glass p-5 rounded-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4 hover:border-gold/40 transition-colors group">
+                    <div className="flex items-center gap-6">
+                      <div className="text-2xl font-serif font-bold text-gold w-20">
+                        {booking.time}
+                      </div>
+                      <div className="space-y-1">
+                        <div className="font-bold text-lg flex items-center gap-2">
+                          <User size={16} className="text-gold/40" />
+                          {booking.name}
+                        </div>
+                        <div className="flex flex-wrap gap-4 text-sm opacity-60">
+                          <span className="flex items-center gap-1 uppercase tracking-tighter font-bold"><Scissors size={14} /> {booking.service || 'Servicio'}</span>
+                          <a href={`https://wa.me/${(booking.whatsapp || '').replace(/\D/g,'')}`} target="_blank" className="flex items-center gap-1 text-gold hover:underline"><Phone size={14} /> {booking.whatsapp || 'Sin teléfono'}</a>
+                        </div>
+                      </div>
                     </div>
-                    <div className="flex flex-wrap gap-4 text-sm opacity-60">
-                      <span className="flex items-center gap-1"><Scissors size={14} /> {booking.service || 'Servicio'}</span>
-                      <a href={`https://wa.me/${(booking.whatsapp || '').replace(/\D/g,'')}`} target="_blank" className="flex items-center gap-1 text-gold hover:underline"><Phone size={14} /> {booking.whatsapp || 'Sin teléfono'}</a>
-                    </div>
+                    <button 
+                      onClick={() => cancelBooking(booking.id)}
+                      className="p-3 text-red-500/40 hover:text-red-500 hover:bg-red-500/10 rounded-sm transition-all"
+                    >
+                      <Trash2 size={20} />
+                    </button>
                   </div>
+                ))
+              ) : (
+                <div className="glass p-12 text-center rounded-sm border-dashed border-2 border-white/5 opacity-40 italic">
+                  No hay citas para este día.
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Sidebar / Settings */}
+          <div className="space-y-8">
+            <div className="glass p-6 rounded-sm space-y-6">
+              <h3 className="font-serif text-lg flex items-center gap-2">
+                <Power className="text-gold" size={18} />
+                Estado del Día
+              </h3>
+              <div className={`p-6 rounded-sm flex items-center justify-between border ${isDayClosed ? 'bg-red-500/5 border-red-500/20' : 'bg-green-500/5 border-green-500/20'}`}>
+                <div>
+                  <p className="font-bold">{isDayClosed ? "Cerrado" : "Abierto"}</p>
+                  <p className="text-[10px] opacity-60 uppercase tracking-widest">Para reservas web</p>
                 </div>
                 <button 
-                  onClick={() => cancelBooking(booking.id)}
-                  className="p-3 text-red-500/40 hover:text-red-500 hover:bg-red-500/10 rounded-sm transition-all"
+                  onClick={toggleDayStatus}
+                  className={`p-4 rounded-full transition-all shadow-lg ${isDayClosed ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'}`}
                 >
-                  <Trash2 size={20} />
+                  <Power size={20} className="text-white" />
                 </button>
               </div>
-            ))
-          ) : (
-            <div className="glass p-12 text-center rounded-sm border-dashed border-2 border-white/5 opacity-40 italic">
-              No hay citas para este día.
             </div>
-          )}
+
+            {analytics && (
+              <div className="glass p-6 rounded-sm space-y-6">
+                <h3 className="font-serif text-lg flex items-center gap-2">
+                  <TrendingUp className="text-gold" size={18} />
+                  Top Servicios
+                </h3>
+                <div className="space-y-4">
+                  {analytics.popularServices.map((service: any, i: number) => (
+                    <div key={service.name} className="flex justify-between items-center text-sm">
+                      <span className="opacity-60">{i+1}. {service.name}</span>
+                      <span className="font-bold text-gold">{service.count}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
       </div>

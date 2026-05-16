@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { adminDb } from '@/lib/firebaseAdmin';
+import { formatDateKey, SERVICE_PRICES } from '@/lib/utils';
 
 export const dynamic = 'force-dynamic';
 
@@ -10,30 +11,56 @@ export async function GET(request: Request) {
   if (!date) return NextResponse.json({ error: 'Date is required' }, { status: 400 });
 
   try {
+    const dateKey = formatDateKey(date);
+
+    // 1. Get bookings for the selected day
     const snapshot = await adminDb.collection('bookings')
-      .where('date', '==', date)
+      .where('date', '==', dateKey)
       .orderBy('time', 'asc')
       .get();
 
     const bookings = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     
-    const dayStatus = await adminDb.collection('settings').doc(date).get();
+    // 2. Get day status (Open/Closed)
+    const dayStatus = await adminDb.collection('settings').doc(dateKey).get();
     const isClosed = dayStatus.exists && dayStatus.data()?.status === 'closed';
 
-    return NextResponse.json({ bookings, isClosed });
+    // 3. Analytics (Global)
+    const allBookings = await adminDb.collection('bookings').get();
+    let totalRevenue = 0;
+    const serviceCounts: Record<string, number> = {};
+
+    allBookings.forEach(doc => {
+      const data = doc.data();
+      const service = data.service || "Corte";
+      const price = SERVICE_PRICES[service] || 0;
+      totalRevenue += price;
+      serviceCounts[service] = (serviceCounts[service] || 0) + 1;
+    });
+
+    const analytics = {
+      totalBookings: allBookings.size,
+      totalRevenue,
+      popularServices: Object.entries(serviceCounts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 3)
+        .map(([name, count]) => ({ name, count }))
+    };
+
+    return NextResponse.json({ bookings, isClosed, analytics });
   } catch (error) {
     console.error('Admin API error:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
 
-// Para cancelar cita o cerrar día
 export async function POST(request: Request) {
   try {
     const { action, date, bookingId, status } = await request.json();
+    const dateKey = date ? formatDateKey(date) : null;
 
-    if (action === 'toggle-day') {
-      await adminDb.collection('settings').doc(date).set({ status: status });
+    if (action === 'toggle-day' && dateKey) {
+      await adminDb.collection('settings').doc(dateKey).set({ status: status });
       return NextResponse.json({ success: true });
     }
 

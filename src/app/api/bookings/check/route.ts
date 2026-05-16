@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { adminDb } from '@/lib/firebaseAdmin';
+import { formatDateKey } from '@/lib/utils';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,15 +13,17 @@ export async function GET(request: Request) {
   }
 
   try {
+    const dateKey = formatDateKey(date);
+
     // Consultar las citas de ese día
     const snapshot = await adminDb.collection('bookings')
-      .where('date', '==', date)
+      .where('date', '==', dateKey)
       .get();
 
     const occupiedSlots = snapshot.docs.map(doc => doc.data().time);
     
     // También consultar si el día está marcado como "Cerrado" por el admin
-    const dayStatus = await adminDb.collection('settings').doc(date).get();
+    const dayStatus = await adminDb.collection('settings').doc(dateKey).get();
     const isClosed = dayStatus.exists && dayStatus.data()?.status === 'closed';
 
     return NextResponse.json({ occupiedSlots, isClosed });

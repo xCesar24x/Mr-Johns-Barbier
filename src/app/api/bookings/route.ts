@@ -1,28 +1,28 @@
 import { NextResponse } from 'next/server';
 import { adminDb } from '@/lib/firebaseAdmin';
+import { formatDateKey } from '@/lib/utils';
+import { google } from 'googleapis';
 
 export const dynamic = 'force-dynamic';
-import { google } from 'googleapis';
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
     const { name, email, whatsapp, service, date, time } = body;
-
+    const dateKey = formatDateKey(date);
+    
     // 1. Save to Firestore
     const bookingRef = await adminDb.collection('bookings').add({
       name,
       email,
       whatsapp,
       service,
-      date,
+      date: dateKey,
       time,
       createdAt: new Date().toISOString(),
     });
 
     // 2. Add to Google Calendar (Jona's)
-    // IMPORTANT: The Service Account email MUST be added to Jona's Google Calendar 
-    // with "Make changes to events" permissions.
     const SCOPES = ['https://www.googleapis.com/auth/calendar'];
     const auth = new google.auth.JWT({
       email: process.env.FIREBASE_CLIENT_EMAIL,
@@ -60,7 +60,6 @@ export async function POST(request: Request) {
       });
     } catch (calError) {
       console.error('Google Calendar Sync Error:', calError);
-      // We don't fail the whole request if calendar fails, but we log it
     }
 
     return NextResponse.json({ success: true, bookingId: bookingRef.id });
