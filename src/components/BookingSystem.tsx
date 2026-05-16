@@ -58,10 +58,9 @@ export default function BookingSystem() {
   // Cargar espacios ocupados cuando cambia la fecha
   useEffect(() => {
     if (isClient) {
-      const fetchOccupied = async () => {
-        setIsLoadingSlots(true);
         try {
-          const res = await fetch(`/api/bookings/check?date=${selectedDate.toISOString()}`);
+          const dateKey = format(selectedDate, 'yyyy-MM-dd');
+          const res = await fetch(`/api/bookings/check?date=${dateKey}`);
           const data = await res.json();
           setOccupiedSlots(data.occupiedSlots || []);
           setIsDayClosed(data.isClosed || false);
@@ -155,7 +154,7 @@ export default function BookingSystem() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...formData,
-          date: selectedDate.toISOString(),
+          date: format(selectedDate, 'yyyy-MM-dd'),
           time: selectedTime
         })
       });

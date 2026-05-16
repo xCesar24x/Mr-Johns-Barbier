@@ -18,7 +18,8 @@ export default function AdminDashboard() {
   const fetchDayData = async () => {
     setIsLoading(true);
     try {
-      const res = await fetch(`/api/admin/bookings?date=${selectedDate.toISOString()}`);
+      const dateKey = format(selectedDate, 'yyyy-MM-dd');
+      const res = await fetch(`/api/admin/bookings?date=${dateKey}`);
       const data = await res.json();
       setBookings(data.bookings || []);
       setIsDayClosed(data.isClosed || false);
@@ -47,10 +48,11 @@ export default function AdminDashboard() {
 
   const toggleDayStatus = async () => {
     const newStatus = isDayClosed ? 'open' : 'closed';
+    const dateKey = format(selectedDate, 'yyyy-MM-dd');
     try {
       await fetch('/api/admin/bookings', {
         method: 'POST',
-        body: JSON.stringify({ action: 'toggle-day', date: selectedDate.toISOString(), status: newStatus })
+        body: JSON.stringify({ action: 'toggle-day', date: dateKey, status: newStatus })
       });
       setIsDayClosed(!isDayClosed);
     } catch (error) {
