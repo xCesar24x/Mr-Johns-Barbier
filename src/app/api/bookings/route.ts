@@ -22,12 +22,11 @@ export async function POST(request: Request) {
     // IMPORTANT: The Service Account email MUST be added to Jona's Google Calendar 
     // with "Make changes to events" permissions.
     const SCOPES = ['https://www.googleapis.com/auth/calendar'];
-    const auth = new google.auth.JWT(
-      process.env.FIREBASE_CLIENT_EMAIL,
-      undefined,
-      process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-      SCOPES
-    );
+    const auth = new google.auth.JWT({
+      email: process.env.FIREBASE_CLIENT_EMAIL,
+      key: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+      scopes: SCOPES,
+    });
 
     const calendar = google.calendar({ version: 'v3', auth });
     
