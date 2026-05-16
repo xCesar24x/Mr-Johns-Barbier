@@ -342,7 +342,7 @@ export default function BookingSystem() {
                     href={getGoogleCalendarUrl()} 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="w-full bg-white/10 text-charcoal py-3 rounded-sm font-bold uppercase tracking-widest hover:bg-white/20 transition-all flex items-center justify-center gap-3 border border-charcoal/10"
+                    className="w-full bg-gold text-charcoal py-4 rounded-sm font-bold uppercase tracking-widest hover:bg-bronze transition-all flex items-center justify-center gap-3 shadow-lg"
                   >
                     <CalendarIcon size={18} /> Agendar en mi Calendario
                   </a>
