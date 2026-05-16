@@ -10,6 +10,9 @@ export default function AdminDashboard() {
   const [bookings, setBookings] = useState<any[]>([]);
   const [isDayClosed, setIsDayClosed] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [password, setPassword] = useState("");
+  const [loginError, setLoginError] = useState(false);
 
   const fetchDayData = async () => {
     setIsLoading(true);
@@ -26,8 +29,17 @@ export default function AdminDashboard() {
   };
 
   useEffect(() => {
-    fetchDayData();
-  }, [selectedDate]);
+    const auth = sessionStorage.getItem("admin_auth");
+    if (auth === "true") {
+      setIsAuthenticated(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchDayData();
+    }
+  }, [selectedDate, isAuthenticated]);
 
   const toggleDayStatus = async () => {
     const newStatus = isDayClosed ? 'open' : 'closed';
@@ -54,6 +66,49 @@ export default function AdminDashboard() {
       alert("Error al cancelar");
     }
   };
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (password === "Johns2026") {
+      setIsAuthenticated(true);
+      sessionStorage.setItem("admin_auth", "true");
+      setLoginError(false);
+    } else {
+      setLoginError(true);
+    }
+  };
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-charcoal texture-leather flex items-center justify-center p-4">
+        <div className="glass p-8 rounded-sm max-w-sm w-full border-t-4 border-t-gold shadow-2xl">
+          <div className="flex justify-center mb-6">
+            <div className="w-16 h-16 bg-gold rounded-full flex items-center justify-center shadow-lg">
+              <Scissors className="text-charcoal" size={32} />
+            </div>
+          </div>
+          <h2 className="text-2xl font-serif font-bold text-center mb-2 text-parchment">Acceso Privado</h2>
+          <p className="text-gold/60 text-xs text-center uppercase tracking-widest font-bold mb-8">Mr. John's Barbier</p>
+          
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div>
+              <input 
+                type="password" 
+                placeholder="Contraseña Maestra"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className={`w-full bg-white/5 border ${loginError ? 'border-red-500' : 'border-white/10'} p-4 rounded-sm text-center text-gold focus:outline-none focus:border-gold transition-all`}
+              />
+              {loginError && <p className="text-red-500 text-[10px] uppercase font-bold text-center mt-2">Contraseña Incorrecta</p>}
+            </div>
+            <button className="w-full bg-gold text-charcoal py-4 rounded-sm font-bold uppercase tracking-widest hover:bg-bronze transition-all shadow-lg">
+              Entrar al Panel
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-charcoal texture-leather text-parchment p-4 md:p-8">
