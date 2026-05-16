@@ -38,10 +38,33 @@ export default function BookingSystem() {
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [occupiedSlots, setOccupiedSlots] = useState<string[]>([]);
+  const [isDayClosed, setIsDayClosed] = useState(false);
+  const [isLoadingSlots, setIsLoadingSlots] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
   }, []);
+
+  // Cargar espacios ocupados cuando cambia la fecha
+  useEffect(() => {
+    if (isClient) {
+      const fetchOccupied = async () => {
+        setIsLoadingSlots(true);
+        try {
+          const res = await fetch(`/api/bookings/check?date=${selectedDate.toISOString()}`);
+          const data = await res.json();
+          setOccupiedSlots(data.occupiedSlots || []);
+          setIsDayClosed(data.isClosed || false);
+        } catch (error) {
+          console.error("Error fetching slots:", error);
+        } finally {
+          setIsLoadingSlots(false);
+        }
+      };
+      fetchOccupied();
+    }
+  }, [selectedDate, isClient]);
 
   const today = startOfToday();
   
@@ -69,22 +92,30 @@ export default function BookingSystem() {
 
   const isTimeDisabled = (time: string) => {
     if (!isClient) return false;
+    if (isDayClosed) return true;
     
     const now = new Date();
-    // If selecting a strictly future day, all are enabled
-    if (selectedDate.getTime() > today.getTime()) {
-      return false;
-    }
     
-    // If selecting today, check the hours
+    // 1. Bloqueo por tiempo pasado (si es hoy)
     if (isSameDay(selectedDate, today)) {
       const [hours, minutes] = time.split(':').map(Number);
       const slotTime = hours * 60 + minutes;
       const currentTime = now.getHours() * 60 + now.getMinutes();
-      return slotTime < currentTime;
+      if (slotTime < currentTime + 30) return true; // 30 min de margen
     }
     
-    // Past days (though calendar should block them)
+    // 2. Bloqueo por citas ya agendadas (Regla de 1 hora)
+    // Si la hora actual está ocupada, se bloquea.
+    // Si la hora ANTERIOR está ocupada, también se bloquea (porque la cita anterior dura 1h).
+    if (occupiedSlots.includes(time)) return true;
+
+    const [h, m] = time.split(':').map(Number);
+    const prevTimeDate = addMinutes(setMinutes(setHours(new Date(), h), m), -30);
+    const prevTimeStr = format(prevTimeDate, "H:mm");
+    const prevTimeStrAlt = format(prevTimeDate, "k:mm"); // Handle formats like 9:00 vs 09:00
+    
+    if (occupiedSlots.includes(prevTimeStr) || occupiedSlots.includes(prevTimeStrAlt)) return true;
+    
     return selectedDate.getTime() < today.getTime();
   };
 
@@ -235,7 +266,16 @@ export default function BookingSystem() {
                 Hora Disponible
               </h3>
               <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
-                {timeSlots.length > 0 ? (
+                {isLoadingSlots ? (
+                  <div className="col-span-full py-8 text-center text-parchment/40">
+                    <div className="h-5 w-5 border-2 border-gold/30 border-t-gold rounded-full animate-spin mx-auto mb-2" />
+                    Consultando disponibilidad...
+                  </div>
+                ) : isDayClosed ? (
+                  <div className="col-span-full py-8 text-center text-gold font-bold italic bg-gold/5 rounded-sm border border-gold/20">
+                    💈 El barbero no labora este día por motivos personales.
+                  </div>
+                ) : timeSlots.length > 0 ? (
                   timeSlots.map(time => {
                     const disabled = isTimeDisabled(time);
                     const selected = selectedTime === time;
