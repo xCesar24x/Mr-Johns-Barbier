@@ -16,10 +16,11 @@ export async function GET(request: Request) {
     // 1. Get bookings for the selected day
     const snapshot = await adminDb.collection('bookings')
       .where('date', '==', dateKey)
-      .orderBy('time', 'asc')
       .get();
 
-    const bookings = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const bookings = snapshot.docs
+      .map(doc => ({ id: doc.id, ...doc.data() }))
+      .sort((a: any, b: any) => (a.time || "").localeCompare(b.time || ""));
     
     // 2. Get day status (Open/Closed)
     const dayStatus = await adminDb.collection('settings').doc(dateKey).get();
