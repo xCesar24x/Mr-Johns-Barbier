@@ -44,6 +44,15 @@ export default function BookingSystem() {
 
   useEffect(() => {
     setIsClient(true);
+
+    const handleSelectService = (e: any) => {
+      setFormData(prev => ({ ...prev, service: e.detail }));
+      // Opcional: podrías también resetear la hora seleccionada si querés
+      // setSelectedTime(null);
+    };
+
+    window.addEventListener('select-service', handleSelectService);
+    return () => window.removeEventListener('select-service', handleSelectService);
   }, []);
 
   // Cargar espacios ocupados cuando cambia la fecha

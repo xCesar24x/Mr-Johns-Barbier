@@ -114,9 +114,15 @@ export default function Services() {
               
               <div className="flex justify-between items-center pt-6 border-t border-white/10">
                 <span className="text-xl font-serif text-gold font-bold">{service.price}</span>
-                <button className="text-xs uppercase tracking-widest text-parchment hover:text-gold transition-colors font-bold">
+                <a 
+                  href="#reservar"
+                  onClick={() => {
+                    window.dispatchEvent(new CustomEvent('select-service', { detail: service.title }));
+                  }}
+                  className="text-xs uppercase tracking-widest text-parchment hover:text-gold transition-colors font-bold cursor-pointer"
+                >
                   Reservar
-                </button>
+                </a>
               </div>
             </motion.div>
           ))}
