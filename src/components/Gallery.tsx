@@ -60,10 +60,10 @@ export default function Gallery() {
         onMouseLeave={() => setIsPaused(false)}
       >
         <motion.div 
-          className="flex whitespace-nowrap gap-4 px-4"
+          className="flex whitespace-nowrap gap-6 px-4"
           animate={{ x: isPaused ? undefined : "-50%" }}
           transition={{ 
-            duration: 40, 
+            duration: 35, 
             repeat: Infinity, 
             ease: "linear",
             repeatType: "loop"
@@ -73,7 +73,7 @@ export default function Gallery() {
           {doubledImages.map((img, index) => (
             <div 
               key={index} 
-              className="relative flex-shrink-0 w-[300px] h-[400px] rounded-sm overflow-hidden group shadow-2xl"
+              className="relative flex-shrink-0 w-[320px] h-[400px] rounded-sm overflow-hidden group shadow-2xl border border-gold/10"
             >
               <Image 
                 src={prefixPath(img.src)} 
@@ -89,48 +89,8 @@ export default function Gallery() {
         </motion.div>
 
         {/* Soft edges fade */}
-        <div className="absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-parchment to-transparent z-10 pointer-events-none" />
-        <div className="absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-parchment to-transparent z-10 pointer-events-none" />
-      </div>
-
-      {/* Infinite Carousel Row 2 (Reverse) */}
-      <div 
-        className="relative flex overflow-hidden py-4 mt-4"
-        onMouseEnter={() => setIsPaused(true)}
-        onMouseLeave={() => setIsPaused(false)}
-      >
-        <motion.div 
-          className="flex whitespace-nowrap gap-4 px-4"
-          animate={{ x: isPaused ? undefined : "0%" }}
-          transition={{ 
-            duration: 45, 
-            repeat: Infinity, 
-            ease: "linear",
-            repeatType: "loop"
-          }}
-          initial={{ x: "-50%" }}
-        >
-          {doubledImages.map((img, index) => (
-            <div 
-              key={index} 
-              className="relative flex-shrink-0 w-[350px] h-[250px] rounded-sm overflow-hidden group shadow-2xl"
-            >
-              <Image 
-                src={prefixPath(img.src)} 
-                alt={img.alt} 
-                fill 
-                className="object-cover transition-transform duration-700 group-hover:scale-110"
-              />
-              <div className="absolute inset-0 bg-charcoal/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                <span className="text-gold font-serif italic text-lg px-4 text-center">{img.alt}</span>
-              </div>
-            </div>
-          ))}
-        </motion.div>
-
-        {/* Soft edges fade */}
-        <div className="absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-parchment to-transparent z-10 pointer-events-none" />
-        <div className="absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-parchment to-transparent z-10 pointer-events-none" />
+        <div className="absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-parchment to-transparent z-10 pointer-events-none" />
+        <div className="absolute inset-y-0 right-0 w-32 bg-gradient-to-l from-parchment to-transparent z-10 pointer-events-none" />
       </div>
 
     </section>
