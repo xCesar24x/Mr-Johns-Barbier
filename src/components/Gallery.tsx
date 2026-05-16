@@ -3,28 +3,33 @@
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { prefixPath } from "@/lib/utils";
+import { useState } from "react";
 
 const images = [
-  { src: "/images/gal-new-1.webp", alt: "Trabajo en Barbería", size: "large" },
-  { src: "/images/gal-new-3.webp", alt: "Estilo Gentlemen's", size: "small" },
-  { src: "/images/gal-new-4.webp", alt: "Ambiente Premium", size: "medium" },
-  { src: "/images/gal-new-5.webp", alt: "Cuidado de barba", size: "small" },
-  { src: "/images/gal-new-6.webp", alt: "Maestría artesanal", size: "small" },
-  { src: "/images/gal-new-7.webp", alt: "Experiencia Mr. John's", size: "medium" },
-  { src: "/images/gal-new-8.webp", alt: "Técnica de navaja", size: "small" },
-  { src: "/images/gal-new-9.webp", alt: "Acabados perfectos", size: "small" },
-  { src: "/images/gal-new-10.webp", alt: "Tradición viva", size: "large" },
+  { src: "/images/gal-new-1.webp", alt: "Trabajo en Barbería" },
+  { src: "/images/gal-new-3.webp", alt: "Estilo Gentlemen's" },
+  { src: "/images/gal-new-4.webp", alt: "Ambiente Premium" },
+  { src: "/images/gal-new-5.webp", alt: "Cuidado de barba" },
+  { src: "/images/gal-new-6.webp", alt: "Maestría artesanal" },
+  { src: "/images/gal-new-7.webp", alt: "Experiencia Mr. John's" },
+  { src: "/images/gal-new-8.webp", alt: "Técnica de navaja" },
+  { src: "/images/gal-new-9.webp", alt: "Acabados perfectos" },
+  { src: "/images/gal-new-10.webp", alt: "Tradición viva" },
 ];
 
 export default function Gallery() {
+  const [isPaused, setIsPaused] = useState(false);
+
+  // Duplicamos las imágenes para el efecto infinito
+  const doubledImages = [...images, ...images];
+
   return (
     <section id="galeria" className="py-24 bg-parchment relative overflow-hidden">
       {/* Decorative texture */}
       <div className="absolute inset-0 opacity-[0.05] pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/pinstripe.png')]" />
       
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        
-        <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 mb-12">
+        <div className="flex flex-col md:flex-row justify-between items-end gap-8">
           <div className="max-w-2xl">
             <span className="text-gold font-sans tracking-[0.2em] uppercase text-sm mb-4 block font-bold">
               Instagram @mrjohnsbarbier
@@ -42,56 +47,92 @@ export default function Gallery() {
             rel="noopener noreferrer"
             className="flex items-center gap-3 px-10 py-5 bg-charcoal text-parchment rounded-sm font-bold uppercase tracking-widest hover:bg-gold hover:text-charcoal transition-all duration-500 shadow-xl group"
           >
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="group-hover:rotate-12 transition-transform"
-            >
-              <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
-              <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
-              <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
-            </svg>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover:rotate-12 transition-transform"><rect width="20" height="20" x="2" y="2" rx="5" ry="5" /><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" /><line x1="17.5" x2="17.51" y1="6.5" y2="6.5" /></svg>
             Explorar Instagram
           </a>
         </div>
+      </div>
 
-        {/* Dynamic Masonry-like Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 auto-rows-[250px]">
-          {images.map((img, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.05 }}
-              className={`relative overflow-hidden group cursor-pointer rounded-sm shadow-lg
-                ${img.size === 'large' ? 'md:col-span-2 md:row-span-2' : ''}
-                ${img.size === 'medium' ? 'md:col-span-2 md:row-span-1' : ''}
-              `}
+      {/* Infinite Carousel Row 1 */}
+      <div 
+        className="relative flex overflow-hidden py-4"
+        onMouseEnter={() => setIsPaused(true)}
+        onMouseLeave={() => setIsPaused(false)}
+      >
+        <motion.div 
+          className="flex whitespace-nowrap gap-4 px-4"
+          animate={{ x: isPaused ? undefined : "-50%" }}
+          transition={{ 
+            duration: 40, 
+            repeat: Infinity, 
+            ease: "linear",
+            repeatType: "loop"
+          }}
+          initial={{ x: 0 }}
+        >
+          {doubledImages.map((img, index) => (
+            <div 
+              key={index} 
+              className="relative flex-shrink-0 w-[300px] h-[400px] rounded-sm overflow-hidden group shadow-2xl"
             >
               <Image 
                 src={prefixPath(img.src)} 
                 alt={img.alt} 
                 fill 
-                className="object-cover transition-transform duration-1000 group-hover:scale-110"
+                className="object-cover transition-transform duration-700 group-hover:scale-110"
               />
-              <div className="absolute inset-0 bg-charcoal/60 opacity-0 group-hover:opacity-100 transition-all duration-500 flex flex-col items-center justify-center p-6 text-center">
-                <div className="w-12 h-12 border border-gold/50 rounded-full flex items-center justify-center mb-4 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
-                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a68a56" strokeWidth="2"><rect width="20" height="20" x="2" y="2" rx="5" ry="5" /><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" /><line x1="17.5" x2="17.51" y1="6.5" y2="6.5" /></svg>
-                </div>
-                <span className="text-gold font-serif italic text-lg opacity-0 group-hover:opacity-100 transition-opacity delay-100">{img.alt}</span>
+              <div className="absolute inset-0 bg-charcoal/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                <span className="text-gold font-serif italic text-lg px-4 text-center">{img.alt}</span>
               </div>
-            </motion.div>
+            </div>
           ))}
-        </div>
+        </motion.div>
 
+        {/* Soft edges fade */}
+        <div className="absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-parchment to-transparent z-10 pointer-events-none" />
+        <div className="absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-parchment to-transparent z-10 pointer-events-none" />
       </div>
+
+      {/* Infinite Carousel Row 2 (Reverse) */}
+      <div 
+        className="relative flex overflow-hidden py-4 mt-4"
+        onMouseEnter={() => setIsPaused(true)}
+        onMouseLeave={() => setIsPaused(false)}
+      >
+        <motion.div 
+          className="flex whitespace-nowrap gap-4 px-4"
+          animate={{ x: isPaused ? undefined : "0%" }}
+          transition={{ 
+            duration: 45, 
+            repeat: Infinity, 
+            ease: "linear",
+            repeatType: "loop"
+          }}
+          initial={{ x: "-50%" }}
+        >
+          {doubledImages.map((img, index) => (
+            <div 
+              key={index} 
+              className="relative flex-shrink-0 w-[350px] h-[250px] rounded-sm overflow-hidden group shadow-2xl"
+            >
+              <Image 
+                src={prefixPath(img.src)} 
+                alt={img.alt} 
+                fill 
+                className="object-cover transition-transform duration-700 group-hover:scale-110"
+              />
+              <div className="absolute inset-0 bg-charcoal/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                <span className="text-gold font-serif italic text-lg px-4 text-center">{img.alt}</span>
+              </div>
+            </div>
+          ))}
+        </motion.div>
+
+        {/* Soft edges fade */}
+        <div className="absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-parchment to-transparent z-10 pointer-events-none" />
+        <div className="absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-parchment to-transparent z-10 pointer-events-none" />
+      </div>
+
     </section>
   );
 }
