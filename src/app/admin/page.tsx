@@ -131,8 +131,8 @@ export default function AdminDashboard() {
                       {booking.name}
                     </div>
                     <div className="flex flex-wrap gap-4 text-sm opacity-60">
-                      <span className="flex items-center gap-1"><Scissors size={14} /> {booking.service}</span>
-                      <a href={`https://wa.me/${booking.whatsapp.replace(/\D/g,'')}`} target="_blank" className="flex items-center gap-1 text-gold hover:underline"><Phone size={14} /> {booking.whatsapp}</a>
+                      <span className="flex items-center gap-1"><Scissors size={14} /> {booking.service || 'Servicio'}</span>
+                      <a href={`https://wa.me/${(booking.whatsapp || '').replace(/\D/g,'')}`} target="_blank" className="flex items-center gap-1 text-gold hover:underline"><Phone size={14} /> {booking.whatsapp || 'Sin teléfono'}</a>
                     </div>
                   </div>
                 </div>
