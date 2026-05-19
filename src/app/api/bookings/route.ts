@@ -55,7 +55,7 @@ export async function POST(request: Request) {
 
     try {
       await calendar.events.insert({
-        calendarId: process.env.GOOGLE_CALENDAR_ID || 'primary',
+        calendarId: process.env.GOOGLE_CALENDAR_ID || 'mrjohnsbarbier@gmail.com',
         requestBody: event,
       });
     } catch (calError) {
