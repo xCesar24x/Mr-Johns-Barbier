@@ -55,12 +55,16 @@ export async function POST(request: Request) {
         dateTime: formatLocalISO(endDate),
         timeZone: 'America/Costa_Rica',
       },
+      attendees: [
+        { email: email }
+      ]
     };
 
     try {
       await calendar.events.insert({
         calendarId: process.env.GOOGLE_CALENDAR_ID || 'mrjohnsbarbier@gmail.com',
         requestBody: event,
+        sendUpdates: 'all', // Send invitation email to the client
       });
     } catch (calError) {
       console.error('Google Calendar Sync Error:', calError);
