@@ -22,7 +22,12 @@ export default function AdminDashboard() {
       const dateKey = format(selectedDate, 'yyyy-MM-dd');
       const res = await fetch(`/api/admin/bookings?date=${dateKey}`);
       const data = await res.json();
-      setBookings(data.bookings || []);
+      
+      const sortedBookings = (data.bookings || []).sort((a: any, b: any) => 
+        a.time.localeCompare(b.time, undefined, { numeric: true })
+      );
+      
+      setBookings(sortedBookings);
       setIsDayClosed(data.isClosed || false);
       setLunchTime(data.lunchTime || "none");
       if (data.analytics) {
