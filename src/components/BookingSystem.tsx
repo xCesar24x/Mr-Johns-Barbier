@@ -388,14 +388,6 @@ export default function BookingSystem() {
                       </>
                     )}
                   </button>
-                  <a 
-                    href={getGoogleCalendarUrl()} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="w-full bg-gold text-charcoal py-4 rounded-sm font-bold uppercase tracking-widest hover:bg-bronze transition-all flex items-center justify-center gap-3 shadow-lg"
-                  >
-                    <CalendarIcon size={18} /> Agendar en mi Calendario
-                  </a>
                   <button onClick={() => setIsPreviewOpen(false)} className="w-full text-charcoal/60 py-2 text-sm uppercase tracking-widest font-bold hover:text-charcoal transition-colors">Modificar Datos</button>
                 </div>
               </div>
