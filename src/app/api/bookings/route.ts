@@ -32,23 +32,27 @@ export async function POST(request: Request) {
 
     const calendar = google.calendar({ version: 'v3', auth });
     
-    // Parse date and time
+    // Parse date and time in UTC to avoid local server timezone issues
     const [hours, minutes] = time.split(':').map(Number);
-    const startDate = new Date(date);
-    startDate.setHours(hours, minutes, 0, 0);
+    const startDate = new Date(`${date}T00:00:00Z`);
+    startDate.setUTCHours(hours, minutes, 0, 0);
+    
     const endDate = new Date(startDate);
-    endDate.setMinutes(startDate.getMinutes() + 30);
+    endDate.setUTCMinutes(startDate.getUTCMinutes() + 30);
+
+    // Format to local ISO (YYYY-MM-DDTHH:mm:ss) by removing the Z and milliseconds
+    const formatLocalISO = (d: Date) => d.toISOString().replace(/\.\d{3}Z$/, '');
 
     const event = {
       summary: `Barbería: ${service} - ${name}`,
       location: 'Mr Johns Barbier',
       description: `👤 Cliente: ${name}\n📱 WhatsApp: ${whatsapp}\n📧 Email: ${email}\n✂️ Servicio: ${service}`,
       start: {
-        dateTime: startDate.toISOString(),
+        dateTime: formatLocalISO(startDate),
         timeZone: 'America/Costa_Rica',
       },
       end: {
-        dateTime: endDate.toISOString(),
+        dateTime: formatLocalISO(endDate),
         timeZone: 'America/Costa_Rica',
       },
     };
