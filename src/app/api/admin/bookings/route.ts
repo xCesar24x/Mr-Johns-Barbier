@@ -22,9 +22,10 @@ export async function GET(request: Request) {
       .map(doc => ({ id: doc.id, ...doc.data() }))
       .sort((a: any, b: any) => (a.time || "").localeCompare(b.time || ""));
     
-    // 2. Get day status (Open/Closed)
+    // 2. Get day status (Open/Closed) and lunchTime
     const dayStatus = await adminDb.collection('settings').doc(dateKey).get();
     const isClosed = dayStatus.exists && dayStatus.data()?.status === 'closed';
+    const lunchTime = dayStatus.exists ? dayStatus.data()?.lunchTime || 'none' : 'none';
 
     // 3. Analytics (Global)
     const allBookings = await adminDb.collection('bookings').get();
@@ -48,7 +49,7 @@ export async function GET(request: Request) {
         .map(([name, count]) => ({ name, count }))
     };
 
-    return NextResponse.json({ bookings, isClosed, analytics });
+    return NextResponse.json({ bookings, isClosed, lunchTime, analytics });
   } catch (error) {
     console.error('Admin API error:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
@@ -57,11 +58,16 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const { action, date, bookingId, status } = await request.json();
+    const { action, date, bookingId, status, lunchTime } = await request.json();
     const dateKey = date ? formatDateKey(date) : null;
 
     if (action === 'toggle-day' && dateKey) {
-      await adminDb.collection('settings').doc(dateKey).set({ status: status });
+      await adminDb.collection('settings').doc(dateKey).set({ status: status }, { merge: true });
+      return NextResponse.json({ success: true });
+    }
+
+    if (action === 'set-lunch' && dateKey) {
+      await adminDb.collection('settings').doc(dateKey).set({ lunchTime: lunchTime || 'none' }, { merge: true });
       return NextResponse.json({ success: true });
     }
 

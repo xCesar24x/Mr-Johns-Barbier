@@ -14,6 +14,7 @@ export default function AdminDashboard() {
   const [password, setPassword] = useState("");
   const [loginError, setLoginError] = useState(false);
   const [analytics, setAnalytics] = useState<any>(null);
+  const [lunchTime, setLunchTime] = useState("none");
 
   const fetchDayData = async () => {
     setIsLoading(true);
@@ -23,6 +24,7 @@ export default function AdminDashboard() {
       const data = await res.json();
       setBookings(data.bookings || []);
       setIsDayClosed(data.isClosed || false);
+      setLunchTime(data.lunchTime || "none");
       if (data.analytics) {
         setAnalytics(data.analytics);
       }
@@ -57,6 +59,19 @@ export default function AdminDashboard() {
       setIsDayClosed(!isDayClosed);
     } catch (error) {
       alert("Error al cambiar estado del día");
+    }
+  };
+
+  const handleLunchChange = async (newTime: string) => {
+    setLunchTime(newTime);
+    const dateKey = format(selectedDate, 'yyyy-MM-dd');
+    try {
+      await fetch('/api/admin/bookings', {
+        method: 'POST',
+        body: JSON.stringify({ action: 'set-lunch', date: dateKey, lunchTime: newTime })
+      });
+    } catch (error) {
+      alert("Error al guardar la hora de almuerzo");
     }
   };
 
@@ -242,6 +257,36 @@ export default function AdminDashboard() {
                 >
                   <Power size={20} className="text-white" />
                 </button>
+              </div>
+            </div>
+ 
+            {/* Hora de Almuerzo */}
+            <div className="glass p-6 rounded-sm space-y-4">
+              <h3 className="font-serif text-lg flex items-center gap-2">
+                <Clock className="text-gold" size={18} />
+                Hora de Almuerzo
+              </h3>
+              <p className="text-xs opacity-60 uppercase tracking-widest leading-relaxed">
+                Bloqueará 1 hora en la web (el espacio seleccionado y el siguiente).
+              </p>
+              <div className="relative">
+                <select
+                  value={lunchTime}
+                  onChange={(e) => handleLunchChange(e.target.value)}
+                  className="w-full bg-white/5 border border-white/10 rounded-sm py-3 px-4 pr-10 text-parchment focus:border-gold outline-none transition-colors appearance-none font-bold cursor-pointer"
+                >
+                  <option value="none" className="bg-charcoal text-parchment">Ninguno (Día Completo)</option>
+                  <option value="11:00" className="bg-charcoal text-parchment">11:00 AM</option>
+                  <option value="11:30" className="bg-charcoal text-parchment">11:30 AM</option>
+                  <option value="12:00" className="bg-charcoal text-parchment">12:00 PM</option>
+                  <option value="12:30" className="bg-charcoal text-parchment">12:30 PM</option>
+                  <option value="13:00" className="bg-charcoal text-parchment">1:00 PM</option>
+                  <option value="13:30" className="bg-charcoal text-parchment">1:30 PM</option>
+                  <option value="14:00" className="bg-charcoal text-parchment">2:00 PM</option>
+                  <option value="14:30" className="bg-charcoal text-parchment">2:30 PM</option>
+                  <option value="15:00" className="bg-charcoal text-parchment">3:00 PM</option>
+                </select>
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gold font-bold">▼</div>
               </div>
             </div>
 

@@ -22,9 +22,27 @@ export async function GET(request: Request) {
 
     const occupiedSlots = snapshot.docs.map(doc => doc.data().time);
     
-    // También consultar si el día está marcado como "Cerrado" por el admin
+    // También consultar si el día está marcado como "Cerrado" o tiene hora de almuerzo
     const dayStatus = await adminDb.collection('settings').doc(dateKey).get();
     const isClosed = dayStatus.exists && dayStatus.data()?.status === 'closed';
+    const lunchTime = dayStatus.exists ? dayStatus.data()?.lunchTime : null;
+
+    if (lunchTime && lunchTime !== 'none') {
+      // Bloqueamos dos rangos de 30 minutos (1 hora de almuerzo total)
+      const [h, m] = lunchTime.split(':').map(Number);
+      const slot1 = `${h}:${m === 0 ? '00' : m}`;
+      
+      let h2 = h;
+      let m2 = m + 30;
+      if (m2 >= 60) {
+        m2 -= 60;
+        h2 += 1;
+      }
+      const slot2 = `${h2}:${m2 === 0 ? '00' : m2}`;
+
+      if (!occupiedSlots.includes(slot1)) occupiedSlots.push(slot1);
+      if (!occupiedSlots.includes(slot2)) occupiedSlots.push(slot2);
+    }
 
     return NextResponse.json({ occupiedSlots, isClosed });
   } catch (error) {
