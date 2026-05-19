@@ -36,6 +36,7 @@ export default function BookingSystem() {
     service: "Corte"
   });
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [occupiedSlots, setOccupiedSlots] = useState<string[]>([]);
@@ -164,15 +165,32 @@ export default function BookingSystem() {
       // 2. Open WhatsApp for final confirmation
       const message = `Hola Mr. John's, deseo confirmar mi cita. \n\n💈 *Detalles de la Cita* 💈\n👤 *Nombre:* ${formData.name}\n📅 *Fecha:* ${format(selectedDate, "PPP", { locale: es })}\n⏰ *Hora:* ${selectedTime}\n✂️ *Servicio:* ${formData.service}\n📱 *WhatsApp:* ${formData.whatsapp}`;
       const encodedMessage = encodeURIComponent(message);
-      window.open(`https://wa.me/50672429342?text=${encodedMessage}`, "_blank");
+      window.open(`https://wa.me/50684349442?text=${encodedMessage}`, "_blank");
       
-      setIsPreviewOpen(false);
+      // 3. Show success state with the Calendar button
+      setIsSuccess(true);
+      // Reload occupied slots so the booked slot is blocked immediately
+      try {
+        const dateKey = format(selectedDate, 'yyyy-MM-dd');
+        const resCheck = await fetch(`/api/bookings/check?date=${dateKey}`);
+        const dataCheck = await resCheck.json();
+        setOccupiedSlots(dataCheck.occupiedSlots || []);
+      } catch (e) {
+        console.error(e);
+      }
     } catch (error) {
       console.error("Booking error:", error);
       alert("Hubo un error al procesar tu reserva. Por favor intenta de nuevo.");
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleCloseSuccess = () => {
+    setIsSuccess(false);
+    setIsPreviewOpen(false);
+    setSelectedTime(null);
+    setFormData({ name: "", email: "", whatsapp: "", service: "Corte" });
   };
 
   const getGoogleCalendarUrl = () => {
@@ -366,38 +384,54 @@ export default function BookingSystem() {
               <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none"><Scissors size={120} /></div>
               <div className="text-center space-y-6">
                 <div className="w-16 h-16 bg-gold rounded-full flex items-center justify-center mx-auto shadow-lg"><CheckCircle2 className="text-charcoal w-10 h-10" /></div>
-                <Dialog.Title className="text-3xl font-serif text-charcoal">¡Casi Listo!</Dialog.Title>
-                <div className="space-y-4 py-6 border-y border-charcoal/10">
-                  <p className="text-charcoal/80 font-sans text-lg">Sr. <span className="font-bold text-charcoal">{formData.name}</span>, su cita para el <span className="font-bold">{format(selectedDate, "d 'de' MMMM", { locale: es })}</span> a las <span className="font-bold">{selectedTime}</span> está lista para ser confirmada.</p>
-                  <div className="bg-charcoal/5 p-4 rounded-sm text-left">
-                    <p className="text-xs uppercase tracking-widest text-charcoal/40 font-bold mb-2">Servicio seleccionado:</p>
-                    <p className="text-charcoal font-serif text-xl">{formData.service}</p>
-                  </div>
-                </div>
-                <div className="space-y-3">
-                  <button 
-                    onClick={confirmAndSend} 
-                    disabled={isSubmitting}
-                    className={`w-full bg-[#25D366] text-white py-4 rounded-sm font-bold uppercase tracking-widest hover:opacity-90 transition-all flex items-center justify-center gap-3 shadow-lg ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  >
-                    {isSubmitting ? (
-                      <div className="h-5 w-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    ) : (
-                      <>
-                        <WhatsAppIcon size={20} /> Confirmar por WhatsApp
-                      </>
-                    )}
-                  </button>
-                  <a 
-                    href={getGoogleCalendarUrl()} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="w-full bg-gold text-charcoal py-4 rounded-sm font-bold uppercase tracking-widest hover:bg-bronze transition-all flex items-center justify-center gap-3 shadow-lg"
-                  >
-                    <CalendarIcon size={18} /> Agendar en mi Calendario
-                  </a>
-                  <button onClick={() => setIsPreviewOpen(false)} className="w-full text-charcoal/60 py-2 text-sm uppercase tracking-widest font-bold hover:text-charcoal transition-colors">Modificar Datos</button>
-                </div>
+                
+                {isSuccess ? (
+                  <>
+                    <Dialog.Title className="text-3xl font-serif text-charcoal">¡Reserva Exitosa!</Dialog.Title>
+                    <div className="space-y-4 py-6 border-y border-charcoal/10">
+                      <p className="text-charcoal/80 font-sans text-lg">Su mensaje ha sido enviado por WhatsApp y su cita está registrada en nuestro sistema.</p>
+                      <p className="text-sm text-charcoal/60 font-bold uppercase tracking-widest mt-4">¡Te esperamos!</p>
+                    </div>
+                    <div className="space-y-3">
+                      <a 
+                        href={getGoogleCalendarUrl()} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="w-full bg-gold text-charcoal py-4 rounded-sm font-bold uppercase tracking-widest hover:bg-bronze transition-all flex items-center justify-center gap-3 shadow-lg"
+                      >
+                        <CalendarIcon size={18} /> Agendar en mi Calendario
+                      </a>
+                      <button onClick={handleCloseSuccess} className="w-full text-charcoal/60 py-2 text-sm uppercase tracking-widest font-bold hover:text-charcoal transition-colors">Cerrar</button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <Dialog.Title className="text-3xl font-serif text-charcoal">¡Casi Listo!</Dialog.Title>
+                    <div className="space-y-4 py-6 border-y border-charcoal/10">
+                      <p className="text-charcoal/80 font-sans text-lg">Sr. <span className="font-bold text-charcoal">{formData.name}</span>, su cita para el <span className="font-bold">{format(selectedDate, "d 'de' MMMM", { locale: es })}</span> a las <span className="font-bold">{selectedTime}</span> está lista para ser confirmada.</p>
+                      <div className="bg-charcoal/5 p-4 rounded-sm text-left">
+                        <p className="text-xs uppercase tracking-widest text-charcoal/40 font-bold mb-2">Servicio seleccionado:</p>
+                        <p className="text-charcoal font-serif text-xl">{formData.service}</p>
+                      </div>
+                    </div>
+                    <div className="space-y-3">
+                      <button 
+                        onClick={confirmAndSend} 
+                        disabled={isSubmitting}
+                        className={`w-full bg-[#25D366] text-white py-4 rounded-sm font-bold uppercase tracking-widest hover:opacity-90 transition-all flex items-center justify-center gap-3 shadow-lg ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      >
+                        {isSubmitting ? (
+                          <div className="h-5 w-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        ) : (
+                          <>
+                            <WhatsAppIcon size={20} /> Confirmar por WhatsApp
+                          </>
+                        )}
+                      </button>
+                      <button onClick={() => setIsPreviewOpen(false)} className="w-full text-charcoal/60 py-2 text-sm uppercase tracking-widest font-bold hover:text-charcoal transition-colors">Modificar Datos</button>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           </Dialog.Content>
