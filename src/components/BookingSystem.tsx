@@ -45,6 +45,8 @@ export default function BookingSystem() {
 
   useEffect(() => {
     setIsClient(true);
+    setSelectedDate(startOfToday());
+    setCurrentMonth(new Date());
 
     const handleSelectService = (e: any) => {
       setFormData(prev => ({ ...prev, service: e.detail }));
@@ -271,8 +273,8 @@ export default function BookingSystem() {
               </div>
               <div className="grid grid-cols-7 gap-2">
                 {daysInMonth.map((day, idx) => {
-                  const isDisabled = isDayDisabled(day.date);
-                  const isSelected = isSameDay(day.date, selectedDate);
+                  const isDisabled = isClient && isDayDisabled(day.date);
+                  const isSelected = isClient && isSameDay(day.date, selectedDate);
                   return (
                     <button
                       key={idx}
