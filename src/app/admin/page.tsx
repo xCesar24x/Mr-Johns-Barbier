@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { format, startOfToday, isSameDay, addDays } from "date-fns";
 import { es } from "date-fns/locale";
-import { Calendar, Trash2, Power, Scissors, User, Phone, Clock, ChevronLeft, ChevronRight, TrendingUp, DollarSign, Users } from "lucide-react";
+import { Calendar, Trash2, Power, Scissors, User, Phone, Clock, ChevronLeft, ChevronRight, TrendingUp, DollarSign, Users, Check, X } from "lucide-react";
 
 export default function AdminDashboard() {
   const [selectedDate, setSelectedDate] = useState(startOfToday());
@@ -15,6 +15,20 @@ export default function AdminDashboard() {
   const [loginError, setLoginError] = useState(false);
   const [analytics, setAnalytics] = useState<any>(null);
   const [lunchTime, setLunchTime] = useState("none");
+
+  const getWhatsAppConfirmUrl = (booking: any) => {
+    const cleanPhone = (booking.whatsapp || '').replace(/\D/g, '');
+    const dateStr = format(selectedDate, "EEEE d 'de' MMMM", { locale: es });
+    const message = `Hola Sr(a). *${booking.name}*, le saluda Jonathan de Mr. John's Barbier. 💈\n\nLe confirmo que su cita para el día *${dateStr}* a las *${booking.time}* para el servicio de *${booking.service}* ha sido *confirmada* con éxito. 👍\n\n¡Le esperamos!`;
+    return `https://wa.me/${cleanPhone.startsWith('506') ? cleanPhone : '506' + cleanPhone}?text=${encodeURIComponent(message)}`;
+  };
+
+  const getWhatsAppCancelUrl = (booking: any) => {
+    const cleanPhone = (booking.whatsapp || '').replace(/\D/g, '');
+    const dateStr = format(selectedDate, "EEEE d 'de' MMMM", { locale: es });
+    const message = `Hola Sr(a). *${booking.name}*, le saluda Jonathan de Mr. John's Barbier. 💈\n\nLamentablemente, por motivos de fuerza mayor no podré atenderle en su cita programada para el día *${dateStr}* a las *${booking.time}* (*${booking.service}*). 😔\n\n¿Le quedaría bien si la reprogramamos para otra hora o día? Quedo a su disposición para coordinar.`;
+    return `https://wa.me/${cleanPhone.startsWith('506') ? cleanPhone : '506' + cleanPhone}?text=${encodeURIComponent(message)}`;
+  };
 
   const fetchDayData = async () => {
     setIsLoading(true);
@@ -228,12 +242,38 @@ export default function AdminDashboard() {
                         </div>
                       </div>
                     </div>
-                    <button 
-                      onClick={() => cancelBooking(booking.id)}
-                      className="p-3 text-red-500/40 hover:text-red-500 hover:bg-red-500/10 rounded-sm transition-all"
-                    >
-                      <Trash2 size={20} />
-                    </button>
+                    <div className="flex gap-2">
+                      {/* Botón de Confirmación (Check Verde) */}
+                      <a
+                        href={getWhatsAppConfirmUrl(booking)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="p-3 text-green-500/40 hover:text-green-500 hover:bg-green-500/10 rounded-sm transition-all"
+                        title="Confirmar cita por WhatsApp"
+                      >
+                        <Check size={20} />
+                      </a>
+                      
+                      {/* Botón de Cancelación (Equis Roja) */}
+                      <a
+                        href={getWhatsAppCancelUrl(booking)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="p-3 text-red-500/40 hover:text-red-500 hover:bg-red-500/10 rounded-sm transition-all"
+                        title="Notificar cancelación por WhatsApp"
+                      >
+                        <X size={20} />
+                      </a>
+
+                      {/* Botón de Eliminar (Basurero) */}
+                      <button 
+                        onClick={() => cancelBooking(booking.id)}
+                        className="p-3 text-white/20 hover:text-red-500 hover:bg-red-500/10 rounded-sm transition-all"
+                        title="Eliminar cita del sistema"
+                      >
+                        <Trash2 size={20} />
+                      </button>
+                    </div>
                   </div>
                 ))
               ) : (
