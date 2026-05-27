@@ -117,17 +117,33 @@ export default function BookingSystem() {
       if (slotTime < currentTime + 30) return true; // 30 min de margen
     }
     
-    // 2. Bloqueo por citas ya agendadas (Regla de 1 hora)
+    // 2. Bloqueo por citas ya agendadas (Regla de 1 hora bilateral)
     // Si la hora actual está ocupada, se bloquea.
-    // Si la hora ANTERIOR está ocupada, también se bloquea (porque la cita anterior dura 1h).
+    // Si la hora ANTERIOR (-30 min) está ocupada, se bloquea (porque esa cita dura 1h y choca con nuestro inicio).
+    // Si la hora SIGUIENTE (+30 min) está ocupada, se bloquea (porque nuestra cita de 1h chocaría con el inicio de esa cita).
     if (occupiedSlots.includes(time)) return true;
 
     const [h, m] = time.split(':').map(Number);
-    const prevTimeDate = addMinutes(setMinutes(setHours(new Date(), h), m), -30);
-    const prevTimeStr = format(prevTimeDate, "H:mm");
-    const prevTimeStrAlt = format(prevTimeDate, "k:mm"); // Handle formats like 9:00 vs 09:00
+    const baseDate = setMinutes(setHours(new Date(), h), m);
     
-    if (occupiedSlots.includes(prevTimeStr) || occupiedSlots.includes(prevTimeStrAlt)) return true;
+    // Cita anterior (-30 min)
+    const prevTimeDate = addMinutes(baseDate, -30);
+    const prevTimeStr = format(prevTimeDate, "H:mm");
+    const prevTimeStrAlt = format(prevTimeDate, "k:mm");
+    
+    // Cita siguiente (+30 min)
+    const nextTimeDate = addMinutes(baseDate, 30);
+    const nextTimeStr = format(nextTimeDate, "H:mm");
+    const nextTimeStrAlt = format(nextTimeDate, "k:mm");
+    
+    if (
+      occupiedSlots.includes(prevTimeStr) || 
+      occupiedSlots.includes(prevTimeStrAlt) ||
+      occupiedSlots.includes(nextTimeStr) ||
+      occupiedSlots.includes(nextTimeStrAlt)
+    ) {
+      return true;
+    }
     
     return selectedDate.getTime() < today.getTime();
   };
@@ -199,7 +215,7 @@ export default function BookingSystem() {
     if (!selectedTime) return "";
     const [hours, minutes] = selectedTime.split(':').map(Number);
     const startDate = setMinutes(setHours(selectedDate, hours), minutes);
-    const endDate = addMinutes(startDate, 30);
+    const endDate = addMinutes(startDate, 60);
 
     const formatGCal = (date: Date) => date.toISOString().replace(/-|:|\.\d\d\d/g, "");
     const dates = `${formatGCal(startDate)}/${formatGCal(endDate)}`;

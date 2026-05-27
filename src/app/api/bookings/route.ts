@@ -38,7 +38,7 @@ export async function POST(request: Request) {
     startDate.setUTCHours(hours, minutes, 0, 0);
     
     const endDate = new Date(startDate);
-    endDate.setUTCMinutes(startDate.getUTCMinutes() + 30);
+    endDate.setUTCMinutes(startDate.getUTCMinutes() + 60);
 
     // Format to local ISO (YYYY-MM-DDTHH:mm:ss) by removing the Z and milliseconds
     const formatLocalISO = (d: Date) => d.toISOString().replace(/\.\d{3}Z$/, '');
