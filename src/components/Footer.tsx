@@ -48,7 +48,7 @@ export default function Footer() {
               <a href="https://www.facebook.com/MrJohnsBarbier" target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-white/5 rounded-full flex items-center justify-center hover:bg-gold hover:text-charcoal transition-all duration-300 shadow-lg">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" /></svg>
               </a>
-              <a href="https://wa.me/50672429342" className="w-10 h-10 bg-white/5 rounded-full flex items-center justify-center hover:bg-[#25D366] hover:text-white transition-all duration-300 shadow-lg">
+              <a href="https://wa.me/50684349442" className="w-10 h-10 bg-white/5 rounded-full flex items-center justify-center hover:bg-[#25D366] hover:text-white transition-all duration-300 shadow-lg">
                 <WhatsAppIcon size={18} />
               </a>
             </div>
@@ -78,7 +78,7 @@ export default function Footer() {
               </li>
               <li className="flex items-center gap-3">
                 <Phone size={18} className="text-gold shrink-0" />
-                <span className="font-bold tracking-wider">+506 7242-9342</span>
+                <span className="font-bold tracking-wider">+506 8434-9442</span>
               </li>
               <li className="flex items-center gap-3">
                 <Mail size={18} className="text-gold shrink-0" />
