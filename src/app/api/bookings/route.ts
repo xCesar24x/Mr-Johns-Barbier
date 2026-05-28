@@ -57,13 +57,23 @@ export async function POST(request: Request) {
       },
     };
 
+    let calendarEventId = null;
     try {
-      await calendar.events.insert({
+      const calRes = await calendar.events.insert({
         calendarId: process.env.GOOGLE_CALENDAR_ID || 'mrjohnsbarbier@gmail.com',
         requestBody: event,
       });
+      calendarEventId = calRes.data.id;
     } catch (calError) {
       console.error('Google Calendar Sync Error:', calError);
+    }
+
+    if (calendarEventId) {
+      try {
+        await bookingRef.update({ calendarEventId });
+      } catch (dbUpdateError) {
+        console.error('Error updating booking with calendarEventId:', dbUpdateError);
+      }
     }
 
     return NextResponse.json({ success: true, bookingId: bookingRef.id });

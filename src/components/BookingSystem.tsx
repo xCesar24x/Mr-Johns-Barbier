@@ -183,7 +183,7 @@ export default function BookingSystem() {
       // 2. Open WhatsApp for final confirmation
       const message = `Hola Mr. John's, deseo confirmar mi cita. \n\n💈 *Detalles de la Cita* 💈\n👤 *Nombre:* ${formData.name}\n📅 *Fecha:* ${format(selectedDate, "PPP", { locale: es })}\n⏰ *Hora:* ${selectedTime}\n✂️ *Servicio:* ${formData.service}\n📱 *WhatsApp:* ${formData.whatsapp}`;
       const encodedMessage = encodeURIComponent(message);
-      window.open(`https://wa.me/50684349442?text=${encodedMessage}`, "_blank");
+      window.open(`https://wa.me/50672429342?text=${encodedMessage}`, "_blank");
       
       // 3. Show success state with the Calendar button
       setIsSuccess(true);

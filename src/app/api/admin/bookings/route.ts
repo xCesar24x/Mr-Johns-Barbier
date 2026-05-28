@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { adminDb } from '@/lib/firebaseAdmin';
 import { formatDateKey, SERVICE_PRICES } from '@/lib/utils';
+import { google } from 'googleapis';
 
 export const dynamic = 'force-dynamic';
 
@@ -72,6 +73,30 @@ export async function POST(request: Request) {
     }
 
     if (action === 'cancel-booking') {
+      const bookingDoc = await adminDb.collection('bookings').doc(bookingId).get();
+      if (bookingDoc.exists) {
+        const bookingData = bookingDoc.data();
+        const calendarEventId = bookingData?.calendarEventId;
+
+        if (calendarEventId) {
+          try {
+            const SCOPES = ['https://www.googleapis.com/auth/calendar'];
+            const auth = new google.auth.JWT({
+              email: process.env.FIREBASE_CLIENT_EMAIL,
+              key: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+              scopes: SCOPES,
+            });
+            const calendar = google.calendar({ version: 'v3', auth });
+            await calendar.events.delete({
+              calendarId: process.env.GOOGLE_CALENDAR_ID || 'mrjohnsbarbier@gmail.com',
+              eventId: calendarEventId,
+            });
+          } catch (calError) {
+            console.error('Error deleting Google Calendar event:', calError);
+          }
+        }
+      }
+
       await adminDb.collection('bookings').doc(bookingId).delete();
       return NextResponse.json({ success: true });
     }
