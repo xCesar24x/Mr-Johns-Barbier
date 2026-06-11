@@ -28,21 +28,19 @@ export async function GET(request: Request) {
     const isClosed = dayStatus.exists && dayStatus.data()?.status === 'closed';
     const lunchTime = dayStatus.exists ? dayStatus.data()?.lunchTime || 'none' : 'none';
 
-    // 3. Analytics (Global)
-    const allBookings = await adminDb.collection('bookings').get();
+    // 3. Analytics (For the selected day)
     let totalRevenue = 0;
     const serviceCounts: Record<string, number> = {};
 
-    allBookings.forEach(doc => {
-      const data = doc.data();
-      const service = data.service || "Corte";
+    bookings.forEach((booking: any) => {
+      const service = booking.service || "Corte";
       const price = SERVICE_PRICES[service] || 0;
       totalRevenue += price;
       serviceCounts[service] = (serviceCounts[service] || 0) + 1;
     });
 
     const analytics = {
-      totalBookings: allBookings.size,
+      totalBookings: bookings.length,
       totalRevenue,
       popularServices: Object.entries(serviceCounts)
         .sort((a, b) => b[1] - a[1])

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { format, startOfToday, isSameDay, addDays } from "date-fns";
 import { es } from "date-fns/locale";
-import { Calendar, Trash2, Power, Scissors, User, Phone, Clock, ChevronLeft, ChevronRight, TrendingUp, DollarSign, Users, Check, X } from "lucide-react";
+import { Calendar, Trash2, Power, Scissors, User, Phone, Clock, ChevronLeft, ChevronRight, TrendingUp, DollarSign, Users, Check, X, MessageSquare } from "lucide-react";
 
 export default function AdminDashboard() {
   const [selectedDate, setSelectedDate] = useState(startOfToday());
@@ -15,6 +15,33 @@ export default function AdminDashboard() {
   const [loginError, setLoginError] = useState(false);
   const [analytics, setAnalytics] = useState<any>(null);
   const [lunchTime, setLunchTime] = useState("none");
+  const [notificationModal, setNotificationModal] = useState<{
+    booking: any;
+    type: "confirm" | "cancel";
+  } | null>(null);
+
+  const getWhatsAppUrl = (booking: any, type: "confirm" | "cancel", appType: "business" | "personal" | "standard") => {
+    const cleanPhone = (booking.whatsapp || '').replace(/\D/g, '');
+    const phoneWithCountry = cleanPhone.startsWith('506') ? cleanPhone : '506' + cleanPhone;
+    
+    const dateStr = format(selectedDate, "EEEE d 'de' MMMM", { locale: es });
+    let message = "";
+    if (type === "confirm") {
+      message = `Hola Sr(a). *${booking.name}*, le saluda Jonathan de Mr. John's Barbier. 💈\n\nLe confirmo que su cita para el día *${dateStr}* a las *${booking.time}* para el servicio de *${booking.service}* ha sido *confirmada* con éxito. 👍\n\n¡Le esperamos!`;
+    } else {
+      message = `Hola Sr(a). *${booking.name}*, le saluda Jonathan de Mr. John's Barbier. 💈\n\nLamentablemente, por motivos de fuerza mayor no podré atenderle en su cita programada para el día *${dateStr}* a las *${booking.time}* (*${booking.service}*). 😔\n\n¿Le quedaría bien si la reprogramamos para otra hora o día? Quedo a su disposición para coordinar.`;
+    }
+    
+    const encodedText = encodeURIComponent(message);
+    
+    if (appType === 'business') {
+      return `whatsapp://send?phone=${phoneWithCountry}&text=${encodedText}`;
+    } else if (appType === 'personal') {
+      return `whatsapp-consumer://send?phone=${phoneWithCountry}&text=${encodedText}`;
+    } else {
+      return `https://wa.me/${phoneWithCountry}?text=${encodedText}`;
+    }
+  };
 
   const getWhatsAppConfirmUrl = (booking: any) => {
     const cleanPhone = (booking.whatsapp || '').replace(/\D/g, '');
@@ -244,26 +271,22 @@ export default function AdminDashboard() {
                     </div>
                     <div className="flex gap-2">
                       {/* Botón de Confirmación (Check Verde) */}
-                      <a
-                        href={getWhatsAppConfirmUrl(booking)}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                      <button
+                        onClick={() => setNotificationModal({ booking, type: "confirm" })}
                         className="p-3 text-green-500/40 hover:text-green-500 hover:bg-green-500/10 rounded-sm transition-all"
                         title="Confirmar cita por WhatsApp"
                       >
                         <Check size={20} />
-                      </a>
+                      </button>
                       
                       {/* Botón de Cancelación (Equis Roja) */}
-                      <a
-                        href={getWhatsAppCancelUrl(booking)}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                      <button
+                        onClick={() => setNotificationModal({ booking, type: "cancel" })}
                         className="p-3 text-red-500/40 hover:text-red-500 hover:bg-red-500/10 rounded-sm transition-all"
                         title="Notificar cancelación por WhatsApp"
                       >
                         <X size={20} />
-                      </a>
+                      </button>
 
                       {/* Botón de Eliminar (Basurero) */}
                       <button 
@@ -355,6 +378,69 @@ export default function AdminDashboard() {
         </div>
 
       </div>
+
+      {/* Modal para seleccionar WhatsApp */}
+      {notificationModal && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="glass p-6 rounded-sm max-w-md w-full border-t-4 border-t-gold shadow-2xl space-y-6">
+            <div className="flex justify-between items-start">
+              <div>
+                <h3 className="text-xl font-serif font-bold text-gold">Enviar Notificación</h3>
+                <p className="text-xs opacity-60 uppercase tracking-widest font-bold mt-1">
+                  {notificationModal.type === "confirm" ? "Confirmación de cita" : "Notificación de cancelación"}
+                </p>
+              </div>
+              <button
+                onClick={() => setNotificationModal(null)}
+                className="p-1 text-white/40 hover:text-white hover:bg-white/5 rounded-full transition-all"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="bg-white/5 p-4 rounded-sm border border-white/10 space-y-2 text-sm">
+              <p><span className="opacity-60">Cliente:</span> <strong className="text-gold">{notificationModal.booking.name}</strong></p>
+              <p><span className="opacity-60">Hora:</span> <strong className="text-gold">{notificationModal.booking.time}</strong></p>
+              <p><span className="opacity-60">Servicio:</span> <strong className="text-gold">{notificationModal.booking.service}</strong></p>
+            </div>
+
+            <p className="text-xs opacity-80 text-center leading-relaxed">
+              Selecciona qué aplicación de WhatsApp deseas usar para abrir el chat y pre-cargar el mensaje:
+            </p>
+
+            <div className="grid grid-cols-1 gap-3">
+              <a
+                href={getWhatsAppUrl(notificationModal.booking, notificationModal.type, 'business')}
+                onClick={() => setNotificationModal(null)}
+                className="flex items-center justify-between bg-gold text-charcoal p-4 rounded-sm font-bold uppercase tracking-wider hover:bg-bronze transition-all shadow-lg text-sm text-center"
+              >
+                <span>Abrir WhatsApp Business</span>
+                <MessageSquare size={18} />
+              </a>
+
+              <a
+                href={getWhatsAppUrl(notificationModal.booking, notificationModal.type, 'personal')}
+                onClick={() => setNotificationModal(null)}
+                className="flex items-center justify-between bg-white/10 text-parchment border border-white/20 p-4 rounded-sm font-bold uppercase tracking-wider hover:bg-white/20 transition-all text-sm text-center"
+              >
+                <span>Abrir WhatsApp Personal</span>
+                <MessageSquare size={18} />
+              </a>
+
+              <a
+                href={getWhatsAppUrl(notificationModal.booking, notificationModal.type, 'standard')}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setNotificationModal(null)}
+                className="flex items-center justify-between bg-white/5 text-gold/85 border border-gold/20 p-4 rounded-sm font-bold uppercase tracking-wider hover:bg-gold/10 transition-all text-sm text-center"
+              >
+                <span>Enlace Estándar (wa.me)</span>
+                <Phone size={18} />
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
