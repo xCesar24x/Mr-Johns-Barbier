@@ -26,11 +26,14 @@ export default function AdminDashboard() {
     const phoneWithCountry = cleanPhone.startsWith('506') ? cleanPhone : '506' + cleanPhone;
     
     const dateStr = format(selectedDate, "EEEE d 'de' MMMM", { locale: es });
+    const isMultiple = (booking.service || '').includes(',');
+    const serviceLabel = isMultiple ? "los servicios de" : "el servicio de";
+    
     let message = "";
     if (type === "confirm") {
-      message = `Hola Sr(a). *${booking.name}*, le saluda Jonathan de Mr. John's Barbier. 💈\n\nLe confirmo que su cita para el día *${dateStr}* a las *${booking.time}* para el servicio de *${booking.service}* ha sido *confirmada* con éxito. 👍\n\n¡Le esperamos!`;
+      message = `Hola Sr(a). *${booking.name}*, le saluda Jonathan de Mr. John's Barbier. 💈\n\nLe confirmo que su cita para el día *${dateStr}* a las *${booking.time}* para ${serviceLabel} *${booking.service}* ha sido *confirmada* con éxito. 👍\n\n¡Le esperamos!`;
     } else {
-      message = `Hola Sr(a). *${booking.name}*, le saluda Jonathan de Mr. John's Barbier. 💈\n\nLamentablemente, por motivos de fuerza mayor no podré atenderle en su cita programada para el día *${dateStr}* a las *${booking.time}* (*${booking.service}*). 😔\n\n¿Le quedaría bien si la reprogramamos para otra hora o día? Quedo a su disposición para coordinar.`;
+      message = `Hola Sr(a). *${booking.name}*, le saluda Jonathan de Mr. John's Barbier. 💈\n\nLamentablemente, por motivos de fuerza mayor no podré atenderle en su cita programada para el día *${dateStr}* a las *${booking.time}* (${isMultiple ? 'los servicios de ' : ''}*${booking.service}*). 😔\n\n¿Le quedaría bien si la reprogramamos para otra hora o día? Quedo a su disposición para coordinar.`;
     }
     
     const encodedText = encodeURIComponent(message);
