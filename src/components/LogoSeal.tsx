@@ -8,13 +8,15 @@ export default function LogoSeal({ className = "" }: { className?: string }) {
 
       {/* The actual logo image */}
       <div className="relative w-full h-full p-4">
-        <Image 
-          src={prefixPath("/images/logo4k.png")} 
-          alt="Mr. John's Logo" 
-          fill
-          className="object-contain rounded-full shadow-2xl"
-          priority
-        />
+        <div className="relative w-full h-full rounded-full overflow-hidden shadow-2xl">
+          <Image 
+            src={prefixPath("/images/logo4k.png")} 
+            alt="Mr. John's Logo" 
+            fill
+            className="object-cover scale-[1.04]"
+            priority
+          />
+        </div>
       </div>
       
       {/* Decorative pulse ring */}
