@@ -16,6 +16,9 @@ export const metadata: Metadata = {
   title: "Mr. John's Gentlemen's Barbería | El Arte de la Barbería Clásica",
   description: "Barbería de clase mundial en San Ramón, Costa Rica. Tradición y exclusividad desde 1995. Reserva tu experiencia Gentlemen's.",
   keywords: "Mejor barbería en San Ramón, Barbería clásica Costa Rica, Mr John's, barbería San Ramón Alajuela",
+  icons: {
+    icon: "/images/logo4k.png",
+  }
 };
 
 export default function RootLayout({
