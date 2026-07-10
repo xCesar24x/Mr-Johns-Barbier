@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { format, startOfToday, isSameDay, addDays } from "date-fns";
+import { format, startOfToday, isSameDay, addDays, getDay } from "date-fns";
 import { es } from "date-fns/locale";
-import { Calendar, Trash2, Power, Scissors, User, Phone, Clock, ChevronLeft, ChevronRight, TrendingUp, DollarSign, Users, Check, X, MessageSquare } from "lucide-react";
+import { Calendar, Trash2, Power, Scissors, User, Phone, Clock, ChevronLeft, ChevronRight, TrendingUp, DollarSign, Users, Check, X, MessageSquare, Lock } from "lucide-react";
 
 export default function AdminDashboard() {
   const [selectedDate, setSelectedDate] = useState(startOfToday());
@@ -15,6 +15,7 @@ export default function AdminDashboard() {
   const [loginError, setLoginError] = useState(false);
   const [analytics, setAnalytics] = useState<any>(null);
   const [lunchTime, setLunchTime] = useState("none");
+  const [blockedSlots, setBlockedSlots] = useState<string[]>([]);
   const [notificationModal, setNotificationModal] = useState<{
     booking: any;
     type: "confirm" | "cancel";
@@ -71,6 +72,7 @@ export default function AdminDashboard() {
       setBookings(sortedBookings);
       setIsDayClosed(data.isClosed || false);
       setLunchTime(data.lunchTime || "none");
+      setBlockedSlots(data.blockedSlots || []);
       if (data.analytics) {
         setAnalytics(data.analytics);
       }
@@ -134,6 +136,43 @@ export default function AdminDashboard() {
     } catch (error) {
       alert("Error al cancelar");
     }
+  };
+
+  const toggleBlockSlot = async (slot: string) => {
+    let newBlockedSlots = [...blockedSlots];
+    if (newBlockedSlots.includes(slot)) {
+      newBlockedSlots = newBlockedSlots.filter(s => s !== slot);
+    } else {
+      newBlockedSlots.push(slot);
+    }
+    setBlockedSlots(newBlockedSlots);
+
+    const dateKey = format(selectedDate, 'yyyy-MM-dd');
+    try {
+      await fetch('/api/admin/bookings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'set-blocked-slots', date: dateKey, blockedSlots: newBlockedSlots })
+      });
+    } catch (error) {
+      alert("Error al guardar bloqueo de hora");
+    }
+  };
+
+  const getDaySlots = () => {
+    const dayOfWeek = getDay(selectedDate); // 0 = Sun, 6 = Sat
+    const slots = [];
+    if (dayOfWeek === 6) return []; // Saturdays closed anyway
+
+    let startHour = dayOfWeek === 0 ? 7 : 8;
+    let endHour = dayOfWeek === 0 ? 12 : 19;
+
+    for (let h = startHour; h <= endHour; h++) {
+      slots.push(`${h}:00`);
+      if (h === endHour && dayOfWeek === 0) break;
+      slots.push(`${h}:30`);
+    }
+    return slots;
   };
 
   const handleLogin = (e: React.FormEvent) => {
@@ -356,6 +395,54 @@ export default function AdminDashboard() {
                 </select>
                 <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gold font-bold">▼</div>
               </div>
+            </div>
+
+            {/* Bloqueo de Horas Específicas */}
+            <div className="glass p-6 rounded-sm space-y-4">
+              <h3 className="font-serif text-lg flex items-center gap-2">
+                <Lock className="text-gold" size={18} />
+                Bloqueo de Horas
+              </h3>
+              <p className="text-xs opacity-60 uppercase tracking-widest leading-relaxed">
+                Selecciona las horas específicas que deseas bloquear en la web.
+              </p>
+              
+              {getDaySlots().length > 0 ? (
+                <div className="grid grid-cols-3 gap-2 max-h-56 overflow-y-auto pr-1">
+                  {getDaySlots().map(slot => {
+                    const isBlocked = blockedSlots.includes(slot);
+                    // Check if there's already a booking in this slot
+                    const isOccupiedByBooking = bookings.some(b => b.time === slot);
+                    
+                    return (
+                      <button
+                        key={slot}
+                        disabled={isOccupiedByBooking}
+                        onClick={() => toggleBlockSlot(slot)}
+                        className={`py-2 rounded-sm text-[10px] font-bold transition-all border flex flex-col items-center justify-center gap-1 ${
+                          isOccupiedByBooking
+                            ? 'border-transparent bg-white/5 text-white/20 cursor-not-allowed'
+                            : isBlocked
+                              ? 'bg-red-500/20 border-red-500 text-red-400 hover:bg-red-500/30'
+                              : 'border-white/10 text-parchment/60 hover:border-gold hover:text-gold'
+                        }`}
+                        title={isOccupiedByBooking ? "Horario ya reservado por cliente" : ""}
+                      >
+                        <span>{slot}</span>
+                        {isOccupiedByBooking ? (
+                          <span className="text-[8px] opacity-40 uppercase">Reservado</span>
+                        ) : isBlocked ? (
+                          <span className="text-[8px] text-red-500/80 uppercase font-bold">Bloqueado</span>
+                        ) : (
+                          <span className="text-[8px] opacity-30 uppercase">Libre</span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="text-xs text-gold/60 italic">No laborable este día (sábado).</p>
+              )}
             </div>
 
             {analytics && (

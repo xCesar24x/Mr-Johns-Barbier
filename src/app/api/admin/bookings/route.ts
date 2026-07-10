@@ -23,10 +23,11 @@ export async function GET(request: Request) {
       .map(doc => ({ id: doc.id, ...doc.data() }))
       .sort((a: any, b: any) => (a.time || "").localeCompare(b.time || ""));
     
-    // 2. Get day status (Open/Closed) and lunchTime
+    // 2. Get day status (Open/Closed), lunchTime and blockedSlots
     const dayStatus = await adminDb.collection('settings').doc(dateKey).get();
     const isClosed = dayStatus.exists && dayStatus.data()?.status === 'closed';
     const lunchTime = dayStatus.exists ? dayStatus.data()?.lunchTime || 'none' : 'none';
+    const blockedSlots = dayStatus.exists ? dayStatus.data()?.blockedSlots || [] : [];
 
     // 3. Analytics (For the selected day)
     let totalRevenue = 0;
@@ -54,7 +55,7 @@ export async function GET(request: Request) {
         .map(([name, count]) => ({ name, count }))
     };
 
-    return NextResponse.json({ bookings, isClosed, lunchTime, analytics });
+    return NextResponse.json({ bookings, isClosed, lunchTime, blockedSlots, analytics });
   } catch (error) {
     console.error('Admin API error:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
@@ -63,7 +64,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const { action, date, bookingId, status, lunchTime } = await request.json();
+    const { action, date, bookingId, status, lunchTime, blockedSlots } = await request.json();
     const dateKey = date ? formatDateKey(date) : null;
 
     if (action === 'toggle-day' && dateKey) {
@@ -73,6 +74,11 @@ export async function POST(request: Request) {
 
     if (action === 'set-lunch' && dateKey) {
       await adminDb.collection('settings').doc(dateKey).set({ lunchTime: lunchTime || 'none' }, { merge: true });
+      return NextResponse.json({ success: true });
+    }
+
+    if (action === 'set-blocked-slots' && dateKey) {
+      await adminDb.collection('settings').doc(dateKey).set({ blockedSlots: blockedSlots || [] }, { merge: true });
       return NextResponse.json({ success: true });
     }
 
