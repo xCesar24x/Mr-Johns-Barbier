@@ -4,8 +4,9 @@ import { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { format, addDays, startOfToday, isBefore, isSameDay, setHours, setMinutes, startOfDay, getDay, addMinutes } from "date-fns";
 import { es } from "date-fns/locale";
-import { Calendar as CalendarIcon, Clock, User, Mail, CheckCircle2, ChevronRight, ChevronLeft, Scissors } from "lucide-react";
+import { Calendar as CalendarIcon, Clock, User, Mail, CheckCircle2, ChevronRight, ChevronLeft, Scissors, Check } from "lucide-react";
 import * as Dialog from "@radix-ui/react-dialog";
+import { SERVICE_PRICES, prefixPath } from "@/lib/utils";
 
 // WhatsApp Icon Component
 const WhatsAppIcon = ({ size = 20, className = "" }: { size?: number, className?: string }) => (
@@ -35,6 +36,7 @@ export default function BookingSystem() {
     whatsapp: "",
     service: "Corte"
   });
+  const [selectedServices, setSelectedServices] = useState<string[]>(["Corte"]);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -49,7 +51,7 @@ export default function BookingSystem() {
     setCurrentMonth(new Date());
 
     const handleSelectService = (e: any) => {
-      setFormData(prev => ({ ...prev, service: e.detail }));
+      setSelectedServices([e.detail]);
       // Opcional: podrías también resetear la hora seleccionada si querés
       // setSelectedTime(null);
     };
@@ -160,6 +162,10 @@ export default function BookingSystem() {
     return isPast || isSaturday;
   };
 
+  const totalPrice = useMemo(() => {
+    return selectedServices.reduce((sum, s) => sum + (SERVICE_PRICES[s] || 0), 0);
+  }, [selectedServices]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedTime) return;
@@ -170,18 +176,20 @@ export default function BookingSystem() {
     setIsSubmitting(true);
     try {
       // 1. Sync with Database and Jona's Calendar
+      const servicesString = selectedServices.join(", ");
       await fetch('/api/bookings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...formData,
+          service: servicesString,
           date: format(selectedDate, 'yyyy-MM-dd'),
           time: selectedTime
         })
       });
 
       // 2. Open WhatsApp for final confirmation
-      const message = `Hola Mr. John's, deseo confirmar mi cita. \n\n💈 *Detalles de la Cita* 💈\n👤 *Nombre:* ${formData.name}\n📅 *Fecha:* ${format(selectedDate, "PPP", { locale: es })}\n⏰ *Hora:* ${selectedTime}\n✂️ *Servicio:* ${formData.service}\n📱 *WhatsApp:* ${formData.whatsapp}`;
+      const message = `Hola Mr. John's, deseo confirmar mi cita. \n\n💈 *Detalles de la Cita* 💈\n👤 *Nombre:* ${formData.name}\n📅 *Fecha:* ${format(selectedDate, "PPP", { locale: es })}\n⏰ *Hora:* ${selectedTime}\n✂️ *Servicios:* ${servicesString}\n💰 *Total:* ₡${totalPrice.toLocaleString()}\n📱 *WhatsApp:* ${formData.whatsapp}`;
       const encodedMessage = encodeURIComponent(message);
       window.open(`https://wa.me/50672429342?text=${encodedMessage}`, "_blank");
       
@@ -209,6 +217,7 @@ export default function BookingSystem() {
     setIsPreviewOpen(false);
     setSelectedTime(null);
     setFormData({ name: "", email: "", whatsapp: "", service: "Corte" });
+    setSelectedServices(["Corte"]);
   };
 
   const getGoogleCalendarUrl = () => {
@@ -220,8 +229,9 @@ export default function BookingSystem() {
     const formatGCal = (date: Date) => date.toISOString().replace(/-|:|\.\d\d\d/g, "");
     const dates = `${formatGCal(startDate)}/${formatGCal(endDate)}`;
     
-    const title = `Cita: ${formData.service} - Mr Johns`;
-    const details = `Cita de barbería para ${formData.name}. Servicio: ${formData.service}`;
+    const servicesString = selectedServices.join(", ");
+    const title = `Cita: ${servicesString} - Mr Johns`;
+    const details = `Cita de barbería para ${formData.name}. Servicios: ${servicesString}. Total: ₡${totalPrice.toLocaleString()}`;
     const location = "Mr Johns Barbier, San Ramón, Alajuela";
 
     return `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${dates}&details=${encodeURIComponent(details)}&location=${encodeURIComponent(location)}`;
@@ -371,11 +381,42 @@ export default function BookingSystem() {
                     <input required type="email" placeholder="email@ejemplo.com" className="w-full bg-white/5 border border-white/10 rounded-sm py-3 pl-10 pr-4 text-parchment focus:border-gold outline-none transition-colors" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} />
                   </div>
                 </div>
-                <div className="space-y-1">
-                  <label className="text-xs uppercase tracking-widest text-gold font-bold">Servicio</label>
-                  <select className="w-full bg-white/5 border border-white/10 rounded-sm py-3 px-4 text-parchment focus:border-gold outline-none transition-colors appearance-none" value={formData.service} onChange={(e) => setFormData({...formData, service: e.target.value})}>
-                    {realServices.map(s => <option key={s} className="bg-charcoal" value={s}>{s}</option>)}
-                  </select>
+                <div className="space-y-2">
+                  <label className="text-xs uppercase tracking-widest text-gold font-bold block mb-1">Servicios Solicitados</label>
+                  <div className="grid grid-cols-1 gap-2 max-h-60 overflow-y-auto pr-1 border border-white/10 rounded-sm p-2 bg-black/10">
+                    {realServices.map(s => {
+                      const isSelected = selectedServices.includes(s);
+                      const price = SERVICE_PRICES[s] ? `₡${SERVICE_PRICES[s].toLocaleString()}` : '';
+                      return (
+                        <button
+                          key={s}
+                          type="button"
+                          onClick={() => {
+                            if (isSelected) {
+                              if (selectedServices.length > 1) {
+                                setSelectedServices(selectedServices.filter(item => item !== s));
+                              }
+                            } else {
+                              setSelectedServices([...selectedServices, s]);
+                            }
+                          }}
+                          className={`flex justify-between items-center px-3 py-2 rounded-sm border transition-all text-xs font-sans ${
+                            isSelected 
+                              ? 'border-gold bg-gold/10 text-gold shadow-lg font-bold' 
+                              : 'border-white/5 text-parchment/60 hover:border-gold/50 hover:text-parchment'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2">
+                            <div className={`w-3.5 h-3.5 border rounded-sm flex items-center justify-center ${isSelected ? 'border-gold bg-gold text-charcoal' : 'border-white/30'}`}>
+                              {isSelected && <Check size={10} strokeWidth={3} />}
+                            </div>
+                            <span>{s}</span>
+                          </div>
+                          <span className="opacity-80 font-mono">{price}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
               <button type="submit" disabled={!selectedTime} className={`w-full py-4 rounded-sm font-bold uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2 ${selectedTime ? 'bg-gold text-charcoal hover:bg-bronze' : 'bg-white/10 text-white/20 cursor-not-allowed'}`}>Confirmar Cita <ChevronRight size={18} /></button>
@@ -387,6 +428,7 @@ export default function BookingSystem() {
                 <div className="text-charcoal space-y-1">
                   <p className="text-2xl font-serif">{format(selectedDate, "d 'de' MMMM", { locale: es })}</p>
                   <p className="text-xl font-bold">{selectedTime}</p>
+                  <p className="text-sm font-bold opacity-80 pt-2 border-t border-charcoal/15">Total: ₡{totalPrice.toLocaleString()}</p>
                 </div>
               </motion.div>
             )}
@@ -427,9 +469,13 @@ export default function BookingSystem() {
                     <Dialog.Title className="text-3xl font-serif text-charcoal">¡Casi Listo!</Dialog.Title>
                     <div className="space-y-4 py-6 border-y border-charcoal/10">
                       <p className="text-charcoal/80 font-sans text-lg">Sr. <span className="font-bold text-charcoal">{formData.name}</span>, su cita para el <span className="font-bold">{format(selectedDate, "d 'de' MMMM", { locale: es })}</span> a las <span className="font-bold">{selectedTime}</span> está lista para ser confirmada.</p>
-                      <div className="bg-charcoal/5 p-4 rounded-sm text-left">
-                        <p className="text-xs uppercase tracking-widest text-charcoal/40 font-bold mb-2">Servicio seleccionado:</p>
-                        <p className="text-charcoal font-serif text-xl">{formData.service}</p>
+                      <div className="bg-charcoal/5 p-4 rounded-sm text-left space-y-2">
+                        <p className="text-xs uppercase tracking-widest text-charcoal/40 font-bold">Servicios seleccionados:</p>
+                        <p className="text-charcoal font-serif text-lg leading-snug">{selectedServices.join(", ")}</p>
+                        <div className="flex justify-between items-center pt-2 border-t border-charcoal/10">
+                          <span className="text-xs uppercase tracking-widest text-charcoal/40 font-bold">Precio Total:</span>
+                          <span className="font-serif font-bold text-charcoal">₡{totalPrice.toLocaleString()}</span>
+                        </div>
                       </div>
                     </div>
                     <div className="space-y-3">

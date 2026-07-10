@@ -37,13 +37,14 @@ export default function Navbar() {
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center">
             <Link href="/" className="flex items-center gap-3">
-              <Image 
-                src={prefixPath("/images/logo4k.png")} 
-                alt="Mr. John's Logo" 
-                width={56} 
-                height={56}
-                className="object-contain rounded-full shadow-lg"
-              />
+              <div className="relative w-14 h-14 rounded-full overflow-hidden shadow-lg">
+                <Image 
+                  src={prefixPath("/images/logo4k.png")} 
+                  alt="Mr. John's Logo" 
+                  fill
+                  className="object-cover scale-[1.02]"
+                />
+              </div>
               <span className="font-serif text-xl tracking-widest text-gold font-bold hidden sm:block">
                 MR. JOHN'S
               </span>

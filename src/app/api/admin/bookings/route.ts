@@ -33,10 +33,16 @@ export async function GET(request: Request) {
     const serviceCounts: Record<string, number> = {};
 
     bookings.forEach((booking: any) => {
-      const service = booking.service || "Corte";
-      const price = SERVICE_PRICES[service] || 0;
-      totalRevenue += price;
-      serviceCounts[service] = (serviceCounts[service] || 0) + 1;
+      const serviceValue = booking.service || "Corte";
+      const services = typeof serviceValue === 'string' 
+        ? serviceValue.split(',').map(s => s.trim())
+        : [serviceValue];
+
+      services.forEach((s: string) => {
+        const price = SERVICE_PRICES[s] || 0;
+        totalRevenue += price;
+        serviceCounts[s] = (serviceCounts[s] || 0) + 1;
+      });
     });
 
     const analytics = {

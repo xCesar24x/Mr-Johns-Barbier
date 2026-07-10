@@ -26,12 +26,12 @@ export default function Footer() {
           {/* Brand & Mission */}
           <div className="space-y-6 lg:col-span-1">
             <Link href="/" className="flex items-center gap-3">
-              <div className="relative w-16 h-16">
+              <div className="relative w-16 h-16 rounded-full overflow-hidden">
                 <Image 
                   src={prefixPath("/images/logo4k.png")} 
                   alt="Mr. John's Logo" 
                   fill
-                  className="object-contain rounded-full"
+                  className="object-cover scale-[1.02]"
                 />
               </div>
               <span className="font-serif text-2xl tracking-widest text-gold font-bold">
