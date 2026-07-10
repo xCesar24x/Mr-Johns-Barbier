@@ -28,7 +28,7 @@ export default function Footer() {
             <Link href="/" className="flex items-center gap-3">
               <div className="relative w-16 h-16">
                 <Image 
-                  src={prefixPath("/images/logo.png")} 
+                  src={prefixPath("/images/logo4k.png")} 
                   alt="Mr. John's Logo" 
                   fill
                   className="object-contain rounded-full"

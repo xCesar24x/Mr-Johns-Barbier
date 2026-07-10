@@ -15,7 +15,7 @@ export default function LogoSeal({ className = "" }: { className?: string }) {
       {/* The actual logo image */}
       <div className="relative w-full h-full p-4">
         <Image 
-          src={prefixPath("/images/logo.png")} 
+          src={prefixPath("/images/logo4k.png")} 
           alt="Mr. John's Logo" 
           fill
           className="object-contain rounded-full shadow-2xl"

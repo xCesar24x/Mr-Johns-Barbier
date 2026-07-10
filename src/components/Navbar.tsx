@@ -38,7 +38,7 @@ export default function Navbar() {
           <div className="flex items-center">
             <Link href="/" className="flex items-center gap-3">
               <Image 
-                src={prefixPath("/images/logo.png")} 
+                src={prefixPath("/images/logo4k.png")} 
                 alt="Mr. John's Logo" 
                 width={56} 
                 height={56}
