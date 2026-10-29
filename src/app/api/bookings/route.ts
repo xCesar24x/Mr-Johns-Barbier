@@ -9,6 +9,9 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     const { name, email, whatsapp, service, date, time } = body;
+    if (!service || !service.trim()) {
+      return NextResponse.json({ error: 'Debes seleccionar al menos un servicio' }, { status: 400 });
+    }
     const dateKey = formatDateKey(date);
     
     // 1. Save to Firestore

@@ -34,9 +34,9 @@ export default function BookingSystem() {
     name: "",
     email: "",
     whatsapp: "",
-    service: "Corte"
+    service: ""
   });
-  const [selectedServices, setSelectedServices] = useState<string[]>(["Corte"]);
+  const [selectedServices, setSelectedServices] = useState<string[]>([]);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -166,9 +166,11 @@ export default function BookingSystem() {
     return selectedServices.reduce((sum, s) => sum + (SERVICE_PRICES[s] || 0), 0);
   }, [selectedServices]);
 
+  const canSubmit = Boolean(selectedTime && selectedServices.length > 0);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedTime) return;
+    if (!canSubmit) return;
     setIsPreviewOpen(true);
   };
 
@@ -216,8 +218,8 @@ export default function BookingSystem() {
     setIsSuccess(false);
     setIsPreviewOpen(false);
     setSelectedTime(null);
-    setFormData({ name: "", email: "", whatsapp: "", service: "Corte" });
-    setSelectedServices(["Corte"]);
+    setFormData({ name: "", email: "", whatsapp: "", service: "" });
+    setSelectedServices([]);
   };
 
   const getGoogleCalendarUrl = () => {
@@ -382,7 +384,20 @@ export default function BookingSystem() {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs uppercase tracking-widest text-gold font-bold block mb-1">Servicios Solicitados</label>
+                  <div className="flex justify-between items-center mb-1">
+                    <label className="text-xs uppercase tracking-widest text-gold font-bold block">
+                      Servicios Solicitados <span className="text-amber-400">*</span>
+                    </label>
+                    {selectedServices.length === 0 ? (
+                      <span className="text-[10px] text-amber-400/90 font-sans tracking-normal font-semibold animate-pulse">
+                        Selecciona al menos 1
+                      </span>
+                    ) : (
+                      <span className="text-[10px] text-gold/80 font-sans tracking-normal font-semibold">
+                        {selectedServices.length} {selectedServices.length === 1 ? 'servicio' : 'servicios'}
+                      </span>
+                    )}
+                  </div>
                   <div className="grid grid-cols-1 gap-2 max-h-60 overflow-y-auto pr-1 border border-white/10 rounded-sm p-2 bg-black/10">
                     {realServices.map(s => {
                       const isSelected = selectedServices.includes(s);
@@ -393,9 +408,7 @@ export default function BookingSystem() {
                           type="button"
                           onClick={() => {
                             if (isSelected) {
-                              if (selectedServices.length > 1) {
-                                setSelectedServices(selectedServices.filter(item => item !== s));
-                              }
+                              setSelectedServices(selectedServices.filter(item => item !== s));
                             } else {
                               setSelectedServices([...selectedServices, s]);
                             }
@@ -419,7 +432,17 @@ export default function BookingSystem() {
                   </div>
                 </div>
               </div>
-              <button type="submit" disabled={!selectedTime} className={`w-full py-4 rounded-sm font-bold uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2 ${selectedTime ? 'bg-gold text-charcoal hover:bg-bronze' : 'bg-white/10 text-white/20 cursor-not-allowed'}`}>Confirmar Cita <ChevronRight size={18} /></button>
+              <button 
+                type="submit" 
+                disabled={!canSubmit} 
+                className={`w-full py-4 rounded-sm font-bold uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2 ${
+                  canSubmit 
+                    ? 'bg-gold text-charcoal hover:bg-bronze cursor-pointer shadow-lg' 
+                    : 'bg-white/10 text-white/20 cursor-not-allowed'
+                }`}
+              >
+                Confirmar Cita <ChevronRight size={18} />
+              </button>
             </form>
             {selectedTime && (
               <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="bg-gold p-6 rounded-sm shadow-2xl relative overflow-hidden group">
@@ -428,7 +451,16 @@ export default function BookingSystem() {
                 <div className="text-charcoal space-y-1">
                   <p className="text-2xl font-serif">{format(selectedDate, "d 'de' MMMM", { locale: es })}</p>
                   <p className="text-xl font-bold">{selectedTime}</p>
-                  <p className="text-sm font-bold opacity-80 pt-2 border-t border-charcoal/15">Total: ₡{totalPrice.toLocaleString()}</p>
+                  {selectedServices.length > 0 ? (
+                    <>
+                      <p className="text-xs font-semibold opacity-90 pt-1 line-clamp-2">{selectedServices.join(", ")}</p>
+                      <p className="text-sm font-bold opacity-90 pt-1 border-t border-charcoal/15">Total: ₡{totalPrice.toLocaleString()}</p>
+                    </>
+                  ) : (
+                    <p className="text-xs italic opacity-80 pt-2 border-t border-charcoal/15 text-amber-950 font-bold">
+                      ⚠️ Selecciona al menos un servicio
+                    </p>
+                  )}
                 </div>
               </motion.div>
             )}
