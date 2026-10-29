@@ -7,7 +7,7 @@ import { es } from "date-fns/locale";
 import { Calendar as CalendarIcon, Clock, User, Mail, CheckCircle2, ChevronRight, ChevronLeft, Scissors, Check } from "lucide-react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { SERVICE_PRICES, prefixPath } from "@/lib/utils";
-import { DEFAULT_SERVICES, getPricesMap } from "@/lib/defaultServices";
+import { DEFAULT_SERVICES, getPricesMap, getDurationsMap, formatDuration } from "@/lib/defaultServices";
 import { ServiceItem } from "@/types/service";
 
 // WhatsApp Icon Component
@@ -110,46 +110,55 @@ export default function BookingSystem() {
     return slots;
   }, [selectedDate]);
 
+  const pricesMap = useMemo(() => {
+    return getPricesMap(servicesList);
+  }, [servicesList]);
+
+  const durationsMap = useMemo(() => {
+    return getDurationsMap(servicesList);
+  }, [servicesList]);
+
+  const currentDuration = useMemo(() => {
+    if (selectedServices.length === 0) return 60;
+    return selectedServices.reduce((sum, s) => sum + (durationsMap[s] || 60), 0);
+  }, [selectedServices, durationsMap]);
+
+  const totalPrice = useMemo(() => {
+    return selectedServices.reduce((sum, s) => sum + (pricesMap[s] ?? SERVICE_PRICES[s] ?? 0), 0);
+  }, [selectedServices, pricesMap]);
+
   const isTimeDisabled = (time: string) => {
     if (!isClient) return false;
     if (isDayClosed) return true;
     
     const now = new Date();
+    const dayOfWeek = getDay(selectedDate);
     
+    const [hours, minutes] = time.split(':').map(Number);
+    const candStart = hours * 60 + minutes;
+    const candEnd = candStart + currentDuration;
+
     // 1. Bloqueo por tiempo pasado (si es hoy)
     if (isSameDay(selectedDate, today)) {
-      const [hours, minutes] = time.split(':').map(Number);
-      const slotTime = hours * 60 + minutes;
       const currentTime = now.getHours() * 60 + now.getMinutes();
-      if (slotTime < currentTime + 30) return true; // 30 min de margen
+      if (candStart < currentTime + 30) return true; // 30 min de margen
     }
     
-    // 2. Bloqueo por citas ya agendadas (Regla de 1 hora bilateral)
-    // Si la hora actual está ocupada, se bloquea.
-    // Si la hora ANTERIOR (-30 min) está ocupada, se bloquea (porque esa cita dura 1h y choca con nuestro inicio).
-    // Si la hora SIGUIENTE (+30 min) está ocupada, se bloquea (porque nuestra cita de 1h chocaría con el inicio de esa cita).
-    if (occupiedSlots.includes(time)) return true;
+    // 2. Bloqueo si el servicio excede la hora de cierre
+    // Domingos cierre a las 12:30 PM (750 min), entre semana cierre a las 20:00 (1200 min)
+    const closingTime = dayOfWeek === 0 ? 12 * 60 + 30 : 20 * 60;
+    if (candEnd > closingTime) return true;
 
-    const [h, m] = time.split(':').map(Number);
-    const baseDate = setMinutes(setHours(new Date(), h), m);
-    
-    // Cita anterior (-30 min)
-    const prevTimeDate = addMinutes(baseDate, -30);
-    const prevTimeStr = format(prevTimeDate, "H:mm");
-    const prevTimeStrAlt = format(prevTimeDate, "k:mm");
-    
-    // Cita siguiente (+30 min)
-    const nextTimeDate = addMinutes(baseDate, 30);
-    const nextTimeStr = format(nextTimeDate, "H:mm");
-    const nextTimeStrAlt = format(nextTimeDate, "k:mm");
-    
-    if (
-      occupiedSlots.includes(prevTimeStr) || 
-      occupiedSlots.includes(prevTimeStrAlt) ||
-      occupiedSlots.includes(nextTimeStr) ||
-      occupiedSlots.includes(nextTimeStrAlt)
-    ) {
-      return true;
+    // 3. Bloqueo inteligente: Verificar si cualquier bloque de 30 min requerido dentro de [candStart, candEnd) está ocupado
+    let checkMinute = candStart;
+    while (checkMinute < candEnd) {
+      const ch = Math.floor(checkMinute / 60);
+      const cm = checkMinute % 60;
+      const slotStr = `${ch}:${cm === 0 ? '00' : cm}`;
+      if (occupiedSlots.includes(slotStr)) {
+        return true;
+      }
+      checkMinute += 30;
     }
     
     return selectedDate.getTime() < today.getTime();
@@ -166,14 +175,6 @@ export default function BookingSystem() {
     const isSaturday = dayOfWeek === 6;
     return isPast || isSaturday;
   };
-
-  const pricesMap = useMemo(() => {
-    return getPricesMap(servicesList);
-  }, [servicesList]);
-
-  const totalPrice = useMemo(() => {
-    return selectedServices.reduce((sum, s) => sum + (pricesMap[s] ?? SERVICE_PRICES[s] ?? 0), 0);
-  }, [selectedServices, pricesMap]);
 
   const canSubmit = Boolean(selectedTime && selectedServices.length > 0);
 
@@ -194,13 +195,15 @@ export default function BookingSystem() {
         body: JSON.stringify({
           ...formData,
           service: servicesString,
+          duration: currentDuration,
           date: format(selectedDate, 'yyyy-MM-dd'),
           time: selectedTime
         })
       });
 
       // 2. Open WhatsApp for final confirmation
-      const message = `Hola Mr. John's, deseo confirmar mi cita. \n\n💈 *Detalles de la Cita* 💈\n👤 *Nombre:* ${formData.name}\n📅 *Fecha:* ${format(selectedDate, "PPP", { locale: es })}\n⏰ *Hora:* ${selectedTime}\n✂️ *Servicios:* ${servicesString}\n💰 *Total:* ₡${totalPrice.toLocaleString()}\n📱 *WhatsApp:* ${formData.whatsapp}`;
+      const durText = formatDuration(currentDuration);
+      const message = `Hola Mr. John's, deseo confirmar mi cita. \n\n💈 *Detalles de la Cita* 💈\n👤 *Nombre:* ${formData.name}\n📅 *Fecha:* ${format(selectedDate, "PPP", { locale: es })}\n⏰ *Hora:* ${selectedTime} (${durText})\n✂️ *Servicios:* ${servicesString}\n💰 *Total:* ₡${totalPrice.toLocaleString()}\n📱 *WhatsApp:* ${formData.whatsapp}`;
       const encodedMessage = encodeURIComponent(message);
       window.open(`https://wa.me/50672429342?text=${encodedMessage}`, "_blank");
       
@@ -235,14 +238,15 @@ export default function BookingSystem() {
     if (!selectedTime) return "";
     const [hours, minutes] = selectedTime.split(':').map(Number);
     const startDate = setMinutes(setHours(selectedDate, hours), minutes);
-    const endDate = addMinutes(startDate, 60);
+    const endDate = addMinutes(startDate, currentDuration);
 
     const formatGCal = (date: Date) => date.toISOString().replace(/-|:|\.\d\d\d/g, "");
     const dates = `${formatGCal(startDate)}/${formatGCal(endDate)}`;
     
     const servicesString = selectedServices.join(", ");
+    const durText = formatDuration(currentDuration);
     const title = `Cita: ${servicesString} - Mr Johns`;
-    const details = `Cita de barbería para ${formData.name}. Servicios: ${servicesString}. Total: ₡${totalPrice.toLocaleString()}`;
+    const details = `Cita de barbería para ${formData.name}. Servicios: ${servicesString}. Duración: ${durText}. Total: ₡${totalPrice.toLocaleString()}`;
     const location = "Mr Johns Barbier, San Ramón, Alajuela";
 
     return `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${dates}&details=${encodeURIComponent(details)}&location=${encodeURIComponent(location)}`;
@@ -467,6 +471,7 @@ export default function BookingSystem() {
                   {selectedServices.length > 0 ? (
                     <>
                       <p className="text-xs font-semibold opacity-90 pt-1 line-clamp-2">{selectedServices.join(", ")}</p>
+                      <p className="text-xs font-semibold opacity-75 pt-1">⏱️ Duración: {formatDuration(currentDuration)}</p>
                       <p className="text-sm font-bold opacity-90 pt-1 border-t border-charcoal/15">Total: ₡{totalPrice.toLocaleString()}</p>
                     </>
                   ) : (
@@ -518,6 +523,10 @@ export default function BookingSystem() {
                         <p className="text-xs uppercase tracking-widest text-charcoal/40 font-bold">Servicios seleccionados:</p>
                         <p className="text-charcoal font-serif text-lg leading-snug">{selectedServices.join(", ")}</p>
                         <div className="flex justify-between items-center pt-2 border-t border-charcoal/10">
+                          <span className="text-xs uppercase tracking-widest text-charcoal/40 font-bold">Duración estimada:</span>
+                          <span className="font-serif font-bold text-charcoal">{formatDuration(currentDuration)}</span>
+                        </div>
+                        <div className="flex justify-between items-center pt-1 border-t border-charcoal/10">
                           <span className="text-xs uppercase tracking-widest text-charcoal/40 font-bold">Precio Total:</span>
                           <span className="font-serif font-bold text-charcoal">₡{totalPrice.toLocaleString()}</span>
                         </div>

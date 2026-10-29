@@ -8,12 +8,13 @@ export const dynamic = 'force-dynamic';
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { name, email, whatsapp, service, date, time } = body;
+    const { name, email, whatsapp, service, date, time, duration } = body;
     if (!service || !service.trim()) {
       return NextResponse.json({ error: 'Debes seleccionar al menos un servicio' }, { status: 400 });
     }
     const dateKey = formatDateKey(date);
     const cleanEmail = email ? email.trim() : '';
+    const bookingDuration = Number(duration) > 0 ? Number(duration) : 60;
     
     // 1. Save to Firestore
     const bookingRef = await adminDb.collection('bookings').add({
@@ -21,6 +22,7 @@ export async function POST(request: Request) {
       email: cleanEmail,
       whatsapp,
       service,
+      duration: bookingDuration,
       date: dateKey,
       time,
       createdAt: new Date().toISOString(),
@@ -42,17 +44,20 @@ export async function POST(request: Request) {
     startDate.setUTCHours(hours, minutes, 0, 0);
     
     const endDate = new Date(startDate);
-    endDate.setUTCMinutes(startDate.getUTCMinutes() + 60);
+    endDate.setUTCMinutes(startDate.getUTCMinutes() + bookingDuration);
 
     // Format to local ISO (YYYY-MM-DDTHH:mm:ss) by removing the Z and milliseconds
     const formatLocalISO = (d: Date) => d.toISOString().replace(/\.\d{3}Z$/, '');
 
     const emailLine = cleanEmail ? `\n📧 Email: ${cleanEmail}` : '';
+    const durHours = Math.floor(bookingDuration / 60);
+    const durMins = bookingDuration % 60;
+    const durText = durHours > 0 ? (durMins > 0 ? `${durHours}h ${durMins}m` : `${durHours}h`) : `${durMins} min`;
 
     const event = {
       summary: `Barbería: ${service} - ${name}`,
       location: 'Mr Johns Barbier',
-      description: `👤 Cliente: ${name}\n📱 WhatsApp: ${whatsapp}${emailLine}\n✂️ Servicio: ${service}`,
+      description: `👤 Cliente: ${name}\n📱 WhatsApp: ${whatsapp}${emailLine}\n✂️ Servicio: ${service}\n⏱️ Duración: ${durText}`,
       start: {
         dateTime: formatLocalISO(startDate),
         timeZone: 'America/Costa_Rica',

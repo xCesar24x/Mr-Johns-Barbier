@@ -31,6 +31,7 @@ import {
 } from "lucide-react";
 import ServiceIcon, { AVAILABLE_SERVICE_ICONS } from "@/components/ServiceIcon";
 import { ServiceItem } from "@/types/service";
+import { formatDuration } from "@/lib/defaultServices";
 
 export default function AdminDashboard() {
   const [selectedDate, setSelectedDate] = useState(startOfToday());
@@ -236,6 +237,7 @@ export default function AdminDashboard() {
       service: {
         title: "",
         price: 5000,
+        duration: 60,
         description: "",
         icon: "scissors",
         active: true,
@@ -271,6 +273,7 @@ export default function AdminDashboard() {
           service: {
             ...service,
             price: Number(service.price) || 0,
+            duration: Number(service.duration) > 0 ? Number(service.duration) : 60,
           }
         })
       });
@@ -523,7 +526,10 @@ export default function AdminDashboard() {
                               {booking.name}
                             </div>
                             <div className="flex flex-wrap gap-4 text-sm opacity-60">
-                              <span className="flex items-center gap-1 uppercase tracking-tighter font-bold"><Scissors size={14} /> {booking.service || 'Servicio'}</span>
+                              <span className="flex items-center gap-1 uppercase tracking-tighter font-bold">
+                                <Scissors size={14} /> {booking.service || 'Servicio'} 
+                                <span className="text-gold/80 font-normal">({formatDuration(booking.duration || 60)})</span>
+                              </span>
                               <a href={`https://wa.me/${(booking.whatsapp || '').replace(/\D/g,'')}`} target="_blank" className="flex items-center gap-1 text-gold hover:underline"><Phone size={14} /> {booking.whatsapp || 'Sin teléfono'}</a>
                             </div>
                           </div>
@@ -772,13 +778,18 @@ export default function AdminDashboard() {
                           </div>
                         </div>
 
-                        {/* Title & Price */}
+                        {/* Title & Price & Duration */}
                         <h3 className="text-xl font-serif font-bold text-parchment group-hover:text-gold transition-colors">
                           {srv.title}
                         </h3>
 
-                        <div className="text-2xl font-serif font-bold text-gold my-2 tracking-tight">
-                          ₡{srv.price.toLocaleString()}
+                        <div className="flex items-center gap-3 my-2">
+                          <div className="text-2xl font-serif font-bold text-gold tracking-tight">
+                            ₡{srv.price.toLocaleString()}
+                          </div>
+                          <span className="text-[11px] font-sans font-bold bg-white/5 border border-white/10 px-2 py-0.5 rounded-sm text-gold/90 flex items-center gap-1">
+                            <Clock size={12} /> {formatDuration(srv.duration || 60)}
+                          </span>
                         </div>
 
                         {/* Description */}
@@ -913,6 +924,67 @@ export default function AdminDashboard() {
                     </button>
                   ))}
                 </div>
+              </div>
+
+              {/* Duración */}
+              <div className="space-y-1">
+                <div className="flex justify-between items-center">
+                  <label className="text-xs uppercase tracking-widest text-gold font-bold block">
+                    Duración Estimada <span className="text-red-400">*</span>
+                  </label>
+                  <span className="text-xs font-mono font-bold text-gold flex items-center gap-1">
+                    <Clock size={12} /> {formatDuration(serviceModal.service.duration ?? 60)}
+                  </span>
+                </div>
+                <div className="relative">
+                  <Clock className="absolute left-3 top-1/2 -translate-y-1/2 text-gold/60" size={16} />
+                  <input
+                    type="number"
+                    required
+                    min={15}
+                    step={15}
+                    placeholder="60"
+                    value={serviceModal.service.duration ?? 60}
+                    onChange={(e) => setServiceModal({
+                      ...serviceModal,
+                      service: { ...serviceModal.service, duration: Number(e.target.value) }
+                    })}
+                    className="w-full bg-white/5 border border-white/10 rounded-sm py-3 pl-10 pr-16 text-parchment focus:border-gold outline-none transition-colors font-mono font-bold"
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-parchment/40 uppercase font-bold">
+                    minutos
+                  </span>
+                </div>
+                
+                {/* Presets de Duración Rápidos */}
+                <div className="flex flex-wrap gap-1.5 pt-1.5">
+                  {[
+                    { val: 30, label: "30 min" },
+                    { val: 45, label: "45 min" },
+                    { val: 60, label: "1 hora" },
+                    { val: 90, label: "1h 30m" },
+                    { val: 120, label: "2 horas" },
+                  ].map(preset => (
+                    <button
+                      key={preset.val}
+                      type="button"
+                      onClick={() => setServiceModal({
+                        ...serviceModal,
+                        service: { ...serviceModal.service, duration: preset.val }
+                      })}
+                      className={`text-[10px] px-2.5 py-1 border rounded-sm transition-colors font-bold ${
+                        (serviceModal.service.duration ?? 60) === preset.val
+                          ? 'bg-gold border-gold text-charcoal'
+                          : 'bg-white/5 hover:bg-gold/20 hover:text-gold border-white/10 text-parchment/80'
+                      }`}
+                    >
+                      {preset.label}
+                    </button>
+                  ))}
+                </div>
+                <p className="text-[10px] text-parchment/40 italic pt-1">
+                  * Este tiempo determina cuántos bloques de 30 minutos se reservan en el calendario y se bloquean en la página web.
+                </p>
               </div>
 
               {/* Descripción */}
