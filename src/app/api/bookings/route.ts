@@ -1,27 +1,71 @@
 import { NextResponse } from 'next/server';
 import { adminDb } from '@/lib/firebaseAdmin';
-import { formatDateKey } from '@/lib/utils';
+import { formatDateKey, getOccupiedSlotsForBooking } from '@/lib/utils';
 import { google } from 'googleapis';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: Request) {
   try {
+    if (!adminDb) {
+      return NextResponse.json({ success: false, error: 'Database not initialized' }, { status: 500 });
+    }
+
     const body = await request.json();
     const { name, email, whatsapp, service, date, time, duration } = body;
+    if (!name?.trim() || !whatsapp?.trim() || !date || !time) {
+      return NextResponse.json({ success: false, error: 'Faltan datos obligatorios de la reserva' }, { status: 400 });
+    }
     if (!service || !service.trim()) {
-      return NextResponse.json({ error: 'Debes seleccionar al menos un servicio' }, { status: 400 });
+      return NextResponse.json({ success: false, error: 'Debes seleccionar al menos un servicio' }, { status: 400 });
     }
     const dateKey = formatDateKey(date);
     const cleanEmail = email ? email.trim() : '';
     const bookingDuration = Number(duration) > 0 ? Number(duration) : 60;
+
+    // 0. Verificar disponibilidad en el servidor (evitar doble reserva o día cerrado)
+    const [existingSnapshot, dayStatus] = await Promise.all([
+      adminDb.collection('bookings').where('date', '==', dateKey).get(),
+      adminDb.collection('settings').doc(dateKey).get(),
+    ]);
+
+    if (dayStatus.exists && dayStatus.data()?.status === 'closed') {
+      return NextResponse.json(
+        { success: false, error: 'Este día se encuentra cerrado para reservas.' },
+        { status: 409 }
+      );
+    }
+
+    const occupiedSlots = new Set<string>();
+    existingSnapshot.docs.forEach(doc => {
+      const data = doc.data();
+      const slots = getOccupiedSlotsForBooking(data.time, Number(data.duration) > 0 ? Number(data.duration) : 60);
+      slots.forEach(s => occupiedSlots.add(s));
+    });
+
+    const lunchTime = dayStatus.exists ? dayStatus.data()?.lunchTime : null;
+    if (lunchTime && lunchTime !== 'none') {
+      getOccupiedSlotsForBooking(lunchTime, 60).forEach(s => occupiedSlots.add(s));
+    }
+
+    const blockedSlots: string[] = dayStatus.exists ? (dayStatus.data()?.blockedSlots || []) : [];
+    blockedSlots.forEach(s => occupiedSlots.add(s));
+
+    const requestedSlots = getOccupiedSlotsForBooking(time, bookingDuration);
+    const hasConflict = requestedSlots.some(slot => occupiedSlots.has(slot));
+    if (hasConflict) {
+      return NextResponse.json(
+        { success: false, error: 'El horario seleccionado ya fue ocupado o se traslapa con otra cita. Por favor elige otra hora.' },
+        { status: 409 }
+      );
+    }
     
     // 1. Save to Firestore
     const bookingRef = await adminDb.collection('bookings').add({
-      name,
+      name: name.trim(),
       email: cleanEmail,
-      whatsapp,
-      service,
+      whatsapp: whatsapp.trim(),
+      service: service.trim(),
       duration: bookingDuration,
       date: dateKey,
       time,

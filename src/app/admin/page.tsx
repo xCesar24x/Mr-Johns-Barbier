@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { format, startOfToday, isSameDay, addDays, getDay } from "date-fns";
 import { es } from "date-fns/locale";
 import { 
@@ -26,12 +26,12 @@ import {
   Eye,
   EyeOff,
   RotateCcw,
-  CheckCircle2,
-  AlertCircle
+  CheckCircle2
 } from "lucide-react";
 import ServiceIcon, { AVAILABLE_SERVICE_ICONS } from "@/components/ServiceIcon";
 import { ServiceItem } from "@/types/service";
 import { formatDuration } from "@/lib/defaultServices";
+import { getOccupiedSlotsForBooking } from "@/lib/utils";
 
 export default function AdminDashboard() {
   const [selectedDate, setSelectedDate] = useState(startOfToday());
@@ -97,7 +97,7 @@ export default function AdminDashboard() {
     }
   };
 
-  const fetchDayData = async () => {
+  const fetchDayData = useCallback(async () => {
     setIsLoading(true);
     try {
       const dateKey = format(selectedDate, 'yyyy-MM-dd');
@@ -120,9 +120,9 @@ export default function AdminDashboard() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [selectedDate]);
 
-  const fetchServices = async () => {
+  const fetchServices = useCallback(async () => {
     setIsLoadingServices(true);
     try {
       const res = await fetch("/api/services");
@@ -135,7 +135,7 @@ export default function AdminDashboard() {
     } finally {
       setIsLoadingServices(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     const auth = sessionStorage.getItem("admin_auth");
@@ -149,7 +149,7 @@ export default function AdminDashboard() {
       fetchDayData();
       fetchServices();
     }
-  }, [selectedDate, isAuthenticated]);
+  }, [isAuthenticated, fetchDayData, fetchServices]);
 
   const toggleDayStatus = async () => {
     const newStatus = isDayClosed ? 'open' : 'closed';
@@ -157,10 +157,11 @@ export default function AdminDashboard() {
     try {
       await fetch('/api/admin/bookings', {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'toggle-day', date: dateKey, status: newStatus })
       });
       setIsDayClosed(!isDayClosed);
-    } catch (error) {
+    } catch {
       alert("Error al cambiar estado del día");
     }
   };
@@ -171,9 +172,10 @@ export default function AdminDashboard() {
     try {
       await fetch('/api/admin/bookings', {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'set-lunch', date: dateKey, lunchTime: newTime })
       });
-    } catch (error) {
+    } catch {
       alert("Error al guardar la hora de almuerzo");
     }
   };
@@ -183,11 +185,12 @@ export default function AdminDashboard() {
     try {
       await fetch('/api/admin/bookings', {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'cancel-booking', bookingId: id })
       });
       setBookings(bookings.filter(b => b.id !== id));
       fetchDayData();
-    } catch (error) {
+    } catch {
       alert("Error al cancelar");
     }
   };
@@ -208,7 +211,7 @@ export default function AdminDashboard() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'set-blocked-slots', date: dateKey, blockedSlots: newBlockedSlots })
       });
-    } catch (error) {
+    } catch {
       alert("Error al guardar bloqueo de hora");
     }
   };
@@ -218,16 +221,33 @@ export default function AdminDashboard() {
     const slots = [];
     if (dayOfWeek === 6) return []; // Saturdays closed anyway
 
-    let startHour = dayOfWeek === 0 ? 7 : 8;
-    let endHour = dayOfWeek === 0 ? 12 : 19;
+    const startHour = dayOfWeek === 0 ? 7 : 8;
+    const endHour = dayOfWeek === 0 ? 12 : 19;
 
     for (let h = startHour; h <= endHour; h++) {
       slots.push(`${h}:00`);
-      if (h === endHour && dayOfWeek === 0) break;
+      if (h === endHour) break;
       slots.push(`${h}:30`);
     }
     return slots;
   };
+
+  const occupiedByBookingsSet = useMemo(() => {
+    const set = new Set<string>();
+    bookings.forEach(b => {
+      const slots = getOccupiedSlotsForBooking(b.time, Number(b.duration) > 0 ? Number(b.duration) : 60);
+      slots.forEach(s => set.add(s));
+    });
+    return set;
+  }, [bookings]);
+
+  const occupiedByLunchSet = useMemo(() => {
+    const set = new Set<string>();
+    if (lunchTime && lunchTime !== 'none') {
+      getOccupiedSlotsForBooking(lunchTime, 60).forEach(s => set.add(s));
+    }
+    return set;
+  }, [lunchTime]);
 
   // Service Management Actions
   const handleOpenCreateService = () => {
@@ -312,7 +332,7 @@ export default function AdminDashboard() {
       } else {
         alert(data.error || "Error al eliminar");
       }
-    } catch (err) {
+    } catch {
       alert("Error al eliminar servicio");
     }
   };
@@ -333,7 +353,7 @@ export default function AdminDashboard() {
         setServicesList(data.services);
         showToast(newActive ? "👁️ Servicio visible en la web" : "⏸️ Servicio pausado (oculto en la web)");
       }
-    } catch (e) {
+    } catch {
       alert("Error al cambiar estado");
     }
   };
@@ -353,7 +373,7 @@ export default function AdminDashboard() {
         showToast("↺ Catálogo restaurado a valores por defecto");
         fetchDayData();
       }
-    } catch (e) {
+    } catch {
       alert("Error al restaurar catálogo");
     }
   };
@@ -637,25 +657,35 @@ export default function AdminDashboard() {
                     <div className="grid grid-cols-3 gap-2 max-h-56 overflow-y-auto pr-1">
                       {getDaySlots().map(slot => {
                         const isBlocked = blockedSlots.includes(slot);
-                        const isOccupiedByBooking = bookings.some(b => b.time === slot);
+                        const isOccupiedByBooking = occupiedByBookingsSet.has(slot);
+                        const isOccupiedByLunch = occupiedByLunchSet.has(slot);
+                        const isUnavailable = isOccupiedByBooking || isOccupiedByLunch;
                         
                         return (
                           <button
                             key={slot}
-                            disabled={isOccupiedByBooking}
+                            disabled={isUnavailable}
                             onClick={() => toggleBlockSlot(slot)}
                             className={`py-2 rounded-sm text-[10px] font-bold transition-all border flex flex-col items-center justify-center gap-1 ${
-                              isOccupiedByBooking
+                              isUnavailable
                                 ? 'border-transparent bg-white/5 text-white/20 cursor-not-allowed'
                                 : isBlocked
                                   ? 'bg-red-500/20 border-red-500 text-red-400 hover:bg-red-500/30'
                                   : 'border-white/10 text-parchment/60 hover:border-gold hover:text-gold'
                             }`}
-                            title={isOccupiedByBooking ? "Horario ya reservado por cliente" : ""}
+                            title={
+                              isOccupiedByBooking
+                                ? "Horario reservado por cita de cliente"
+                                : isOccupiedByLunch
+                                  ? "Horario de almuerzo configurado"
+                                  : ""
+                            }
                           >
                             <span>{slot}</span>
                             {isOccupiedByBooking ? (
                               <span className="text-[8px] opacity-40 uppercase">Reservado</span>
+                            ) : isOccupiedByLunch ? (
+                              <span className="text-[8px] text-gold/50 uppercase">Almuerzo</span>
                             ) : isBlocked ? (
                               <span className="text-[8px] text-red-500/80 uppercase font-bold">Bloqueado</span>
                             ) : (

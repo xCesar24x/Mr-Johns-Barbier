@@ -27,3 +27,21 @@ export const SERVICE_PRICES: Record<string, number> = {
   "Cera Depilación": 2000,
   "Cejas": 1000
 };
+
+export function getOccupiedSlotsForBooking(time: string, duration: number): string[] {
+  if (!time || !time.includes(':')) return [];
+  const slots: string[] = [];
+  const [h, m] = time.split(':').map(Number);
+  if (Number.isNaN(h) || Number.isNaN(m)) return [];
+  let currentMinutes = h * 60 + m;
+  const endMinutes = currentMinutes + (duration > 0 ? duration : 60);
+
+  while (currentMinutes < endMinutes) {
+    const slotH = Math.floor(currentMinutes / 60);
+    const slotM = currentMinutes % 60;
+    const slotStr = `${slotH}:${slotM === 0 ? '00' : slotM}`;
+    slots.push(slotStr);
+    currentMinutes += 30;
+  }
+  return slots;
+}

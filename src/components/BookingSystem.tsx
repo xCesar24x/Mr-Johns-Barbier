@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { format, addDays, startOfToday, isBefore, isSameDay, setHours, setMinutes, startOfDay, getDay, addMinutes } from "date-fns";
+import { useState, useMemo, useEffect, useCallback } from "react";
+import { motion } from "framer-motion";
+import { format, addDays, addMonths, startOfToday, isBefore, isSameDay, setHours, setMinutes, getDay, addMinutes } from "date-fns";
 import { es } from "date-fns/locale";
 import { Calendar as CalendarIcon, Clock, User, Mail, CheckCircle2, ChevronRight, ChevronLeft, Scissors, Check } from "lucide-react";
 import * as Dialog from "@radix-ui/react-dialog";
-import { SERVICE_PRICES, prefixPath } from "@/lib/utils";
+import { SERVICE_PRICES } from "@/lib/utils";
 import { DEFAULT_SERVICES, getPricesMap, getDurationsMap, formatDuration } from "@/lib/defaultServices";
 import { ServiceItem } from "@/types/service";
 
@@ -104,7 +104,7 @@ export default function BookingSystem() {
 
     for (let h = startHour; h <= endHour; h++) {
       slots.push(`${h}:00`);
-      if (h === endHour && dayOfWeek === 0) break; // Don't add 12:30 on Sunday
+      if (h === endHour) break; // Último turno a las 19:00 entre semana y 12:00 los domingos
       slots.push(`${h}:30`);
     }
     return slots;
@@ -127,7 +127,7 @@ export default function BookingSystem() {
     return selectedServices.reduce((sum, s) => sum + (pricesMap[s] ?? SERVICE_PRICES[s] ?? 0), 0);
   }, [selectedServices, pricesMap]);
 
-  const isTimeDisabled = (time: string) => {
+  const isTimeDisabled = useCallback((time: string) => {
     if (!isClient) return false;
     if (isDayClosed) return true;
     
@@ -144,9 +144,9 @@ export default function BookingSystem() {
       if (candStart < currentTime + 30) return true; // 30 min de margen
     }
     
-    // 2. Bloqueo si el servicio excede la hora de cierre
-    // Domingos cierre a las 12:30 PM (750 min), entre semana cierre a las 20:00 (1200 min)
-    const closingTime = dayOfWeek === 0 ? 12 * 60 + 30 : 20 * 60;
+    // 2. Bloqueo si el servicio excede la hora de salida del último turno
+    // Domingos último turno 12:00 (salida 13:00 = 780 min), entre semana último turno 19:00 (salida 20:00 = 1200 min)
+    const closingTime = dayOfWeek === 0 ? 13 * 60 : 20 * 60;
     if (candEnd > closingTime) return true;
 
     // 3. Bloqueo inteligente: Verificar si cualquier bloque de 30 min requerido dentro de [candStart, candEnd) está ocupado
@@ -162,7 +162,14 @@ export default function BookingSystem() {
     }
     
     return selectedDate.getTime() < today.getTime();
-  };
+  }, [isClient, isDayClosed, selectedDate, currentDuration, today, occupiedSlots]);
+
+  useEffect(() => {
+    if (selectedTime && isTimeDisabled(selectedTime)) {
+      setSelectedTime(null);
+      setIsPreviewOpen(false);
+    }
+  }, [selectedTime, isTimeDisabled]);
 
   const handleDateSelect = (date: Date) => {
     setSelectedDate(date);
@@ -189,7 +196,7 @@ export default function BookingSystem() {
     try {
       // 1. Sync with Database and Jona's Calendar
       const servicesString = selectedServices.join(", ");
-      await fetch('/api/bookings', {
+      const res = await fetch('/api/bookings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -200,6 +207,18 @@ export default function BookingSystem() {
           time: selectedTime
         })
       });
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        alert(data.error || "El horario seleccionado ya no está disponible. Por favor elige otra hora.");
+        const dateKey = format(selectedDate, 'yyyy-MM-dd');
+        const resCheck = await fetch(`/api/bookings/check?date=${dateKey}`);
+        const dataCheck = await resCheck.json();
+        setOccupiedSlots(dataCheck.occupiedSlots || []);
+        setIsDayClosed(dataCheck.isClosed || false);
+        setIsPreviewOpen(false);
+        return;
+      }
 
       // 2. Open WhatsApp for final confirmation
       const durText = formatDuration(currentDuration);
@@ -298,10 +317,10 @@ export default function BookingSystem() {
                   Selecciona una Fecha
                 </h3>
                 <div className="flex gap-2">
-                  <button onClick={() => setCurrentMonth(addDays(currentMonth, -30))} className="p-2 hover:bg-white/5 rounded-full transition-colors">
+                  <button onClick={() => setCurrentMonth(addMonths(currentMonth, -1))} className="p-2 hover:bg-white/5 rounded-full transition-colors">
                     <ChevronLeft size={20} className="text-gold" />
                   </button>
-                  <button onClick={() => setCurrentMonth(addDays(currentMonth, 30))} className="p-2 hover:bg-white/5 rounded-full transition-colors">
+                  <button onClick={() => setCurrentMonth(addMonths(currentMonth, 1))} className="p-2 hover:bg-white/5 rounded-full transition-colors">
                     <ChevronRight size={20} className="text-gold" />
                   </button>
                 </div>

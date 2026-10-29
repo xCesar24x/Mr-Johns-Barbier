@@ -11,7 +11,6 @@ import {
   Crown, 
   Star, 
   ShieldCheck, 
-  Heart,
   Gem
 } from "lucide-react";
 

@@ -69,7 +69,7 @@ export default function History() {
             </h2>
             <div className="space-y-6 text-lg font-sans text-charcoal/80 leading-relaxed">
               <p>
-                En el corazón de San Ramón, Barbería Mr. John’s es el resultado de la dedicación inquebrantable de **Jonathan**, un maestro barbero que ha dedicado su vida a perfeccionar el arte del cuidado masculino.
+                En el corazón de San Ramón, Barbería Mr. John’s es el resultado de la dedicación inquebrantable de <strong className="font-bold text-charcoal">Jonathan</strong>, un maestro barbero que ha dedicado su vida a perfeccionar el arte del cuidado masculino.
               </p>
               <p>
                 Con una trayectoria que honra la tradición desde 1995, Jonathan ha transformado Mr. John's en un santuario para el caballero contemporáneo. Su enfoque no es solo estético; es una experiencia de relajación, charla y excelencia técnica que rescata la esencia de las antiguas barberías.

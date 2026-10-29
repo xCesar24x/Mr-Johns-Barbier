@@ -1,24 +1,8 @@
 import { NextResponse } from 'next/server';
 import { adminDb } from '@/lib/firebaseAdmin';
-import { formatDateKey } from '@/lib/utils';
+import { formatDateKey, getOccupiedSlotsForBooking } from '@/lib/utils';
 
 export const dynamic = 'force-dynamic';
-
-function getOccupiedSlotsForBooking(time: string, duration: number): string[] {
-  const slots: string[] = [];
-  const [h, m] = time.split(':').map(Number);
-  let currentMinutes = h * 60 + m;
-  const endMinutes = currentMinutes + (duration > 0 ? duration : 60);
-
-  while (currentMinutes < endMinutes) {
-    const slotH = Math.floor(currentMinutes / 60);
-    const slotM = currentMinutes % 60;
-    const slotStr = `${slotH}:${slotM === 0 ? '00' : slotM}`;
-    slots.push(slotStr);
-    currentMinutes += 30;
-  }
-  return slots;
-}
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -29,6 +13,16 @@ export async function GET(request: Request) {
   }
 
   try {
+    if (!adminDb) {
+      return NextResponse.json({
+        bookings: [],
+        occupiedSlots: [],
+        isClosed: false,
+        lunchTime: 'none',
+        blockedSlots: [],
+      });
+    }
+
     const dateKey = formatDateKey(date);
 
     // 1. Consultar las citas de ese día

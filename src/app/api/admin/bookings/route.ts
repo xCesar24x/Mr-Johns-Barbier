@@ -12,6 +12,16 @@ export async function GET(request: Request) {
   if (!date) return NextResponse.json({ error: 'Date is required' }, { status: 400 });
 
   try {
+    if (!adminDb) {
+      return NextResponse.json({
+        bookings: [],
+        isClosed: false,
+        lunchTime: 'none',
+        blockedSlots: [],
+        analytics: { totalBookings: 0, totalRevenue: 0, popularServices: [] }
+      });
+    }
+
     const dateKey = formatDateKey(date);
 
     // 1. Get bookings for the selected day
@@ -30,7 +40,7 @@ export async function GET(request: Request) {
     const blockedSlots = dayStatus.exists ? dayStatus.data()?.blockedSlots || [] : [];
 
     // 3. Analytics (For the selected day)
-    let dynamicPrices: Record<string, number> = { ...SERVICE_PRICES };
+    const dynamicPrices: Record<string, number> = { ...SERVICE_PRICES };
     try {
       const catalogDoc = await adminDb.collection('settings').doc('services_catalog').get();
       if (catalogDoc.exists && Array.isArray(catalogDoc.data()?.services)) {
@@ -78,6 +88,9 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    if (!adminDb) {
+      return NextResponse.json({ error: 'Database not initialized' }, { status: 500 });
+    }
     const { action, date, bookingId, status, lunchTime, blockedSlots } = await request.json();
     const dateKey = date ? formatDateKey(date) : null;
 
@@ -127,6 +140,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
   } catch (error) {
+    console.error('Admin POST error:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
