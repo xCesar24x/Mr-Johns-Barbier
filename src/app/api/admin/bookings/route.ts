@@ -30,6 +30,20 @@ export async function GET(request: Request) {
     const blockedSlots = dayStatus.exists ? dayStatus.data()?.blockedSlots || [] : [];
 
     // 3. Analytics (For the selected day)
+    let dynamicPrices: Record<string, number> = { ...SERVICE_PRICES };
+    try {
+      const catalogDoc = await adminDb.collection('settings').doc('services_catalog').get();
+      if (catalogDoc.exists && Array.isArray(catalogDoc.data()?.services)) {
+        catalogDoc.data()?.services.forEach((s: any) => {
+          if (s.title && typeof s.price === 'number') {
+            dynamicPrices[s.title] = s.price;
+          }
+        });
+      }
+    } catch (e) {
+      console.warn("Could not load dynamic prices for analytics, falling back to static", e);
+    }
+
     let totalRevenue = 0;
     const serviceCounts: Record<string, number> = {};
 
@@ -40,7 +54,7 @@ export async function GET(request: Request) {
         : [serviceValue];
 
       services.forEach((s: string) => {
-        const price = SERVICE_PRICES[s] || 0;
+        const price = dynamicPrices[s] || 0;
         totalRevenue += price;
         serviceCounts[s] = (serviceCounts[s] || 0) + 1;
       });

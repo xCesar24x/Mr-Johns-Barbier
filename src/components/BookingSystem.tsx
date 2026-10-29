@@ -7,6 +7,8 @@ import { es } from "date-fns/locale";
 import { Calendar as CalendarIcon, Clock, User, Mail, CheckCircle2, ChevronRight, ChevronLeft, Scissors, Check } from "lucide-react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { SERVICE_PRICES, prefixPath } from "@/lib/utils";
+import { DEFAULT_SERVICES, getPricesMap } from "@/lib/defaultServices";
+import { ServiceItem } from "@/types/service";
 
 // WhatsApp Icon Component
 const WhatsAppIcon = ({ size = 20, className = "" }: { size?: number, className?: string }) => (
@@ -14,16 +16,6 @@ const WhatsAppIcon = ({ size = 20, className = "" }: { size?: number, className?
     <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.414 0 .004 5.411.001 12.045a11.871 11.871 0 001.592 5.925L0 24l6.135-1.61a11.815 11.815 0 005.915 1.586h.005c6.637 0 12.048-5.411 12.051-12.045a11.815 11.815 0 00-3.592-8.511"/>
   </svg>
 );
-
-const realServices = [
-  "Corte",
-  "Barba",
-  "Corte y Barba",
-  "Limpieza Facial",
-  "Keratina",
-  "Cera Depilación",
-  "Cejas"
-];
 
 export default function BookingSystem() {
   const [selectedDate, setSelectedDate] = useState<Date>(startOfToday());
@@ -41,6 +33,7 @@ export default function BookingSystem() {
   const [isSuccess, setIsSuccess] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [servicesList, setServicesList] = useState<ServiceItem[]>(DEFAULT_SERVICES);
   const [occupiedSlots, setOccupiedSlots] = useState<string[]>([]);
   const [isDayClosed, setIsDayClosed] = useState(false);
   const [isLoadingSlots, setIsLoadingSlots] = useState(false);
@@ -50,10 +43,22 @@ export default function BookingSystem() {
     setSelectedDate(startOfToday());
     setCurrentMonth(new Date());
 
+    // Cargar catálogo dinámico de servicios
+    const fetchServices = async () => {
+      try {
+        const res = await fetch("/api/services");
+        const data = await res.json();
+        if (data.success && Array.isArray(data.services) && data.services.length > 0) {
+          setServicesList(data.services.filter((s: ServiceItem) => s.active !== false));
+        }
+      } catch (e) {
+        console.error("Error al cargar servicios en BookingSystem:", e);
+      }
+    };
+    fetchServices();
+
     const handleSelectService = (e: any) => {
       setSelectedServices([e.detail]);
-      // Opcional: podrías también resetear la hora seleccionada si querés
-      // setSelectedTime(null);
     };
 
     window.addEventListener('select-service', handleSelectService);
@@ -162,9 +167,13 @@ export default function BookingSystem() {
     return isPast || isSaturday;
   };
 
+  const pricesMap = useMemo(() => {
+    return getPricesMap(servicesList);
+  }, [servicesList]);
+
   const totalPrice = useMemo(() => {
-    return selectedServices.reduce((sum, s) => sum + (SERVICE_PRICES[s] || 0), 0);
-  }, [selectedServices]);
+    return selectedServices.reduce((sum, s) => sum + (pricesMap[s] ?? SERVICE_PRICES[s] ?? 0), 0);
+  }, [selectedServices, pricesMap]);
 
   const canSubmit = Boolean(selectedTime && selectedServices.length > 0);
 
@@ -402,16 +411,17 @@ export default function BookingSystem() {
                     )}
                   </div>
                   <div className="grid grid-cols-1 gap-2 max-h-60 overflow-y-auto pr-1 border border-white/10 rounded-sm p-2 bg-black/10">
-                    {realServices.map(s => {
+                    {servicesList.map(item => {
+                      const s = item.title;
                       const isSelected = selectedServices.includes(s);
-                      const price = SERVICE_PRICES[s] ? `₡${SERVICE_PRICES[s].toLocaleString()}` : '';
+                      const price = `₡${item.price.toLocaleString()}`;
                       return (
                         <button
-                          key={s}
+                          key={item.id || s}
                           type="button"
                           onClick={() => {
                             if (isSelected) {
-                              setSelectedServices(selectedServices.filter(item => item !== s));
+                              setSelectedServices(selectedServices.filter(el => el !== s));
                             } else {
                               setSelectedServices([...selectedServices, s]);
                             }
