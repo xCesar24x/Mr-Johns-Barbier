@@ -13,11 +13,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Debes seleccionar al menos un servicio' }, { status: 400 });
     }
     const dateKey = formatDateKey(date);
+    const cleanEmail = email ? email.trim() : '';
     
     // 1. Save to Firestore
     const bookingRef = await adminDb.collection('bookings').add({
       name,
-      email,
+      email: cleanEmail,
       whatsapp,
       service,
       date: dateKey,
@@ -46,10 +47,12 @@ export async function POST(request: Request) {
     // Format to local ISO (YYYY-MM-DDTHH:mm:ss) by removing the Z and milliseconds
     const formatLocalISO = (d: Date) => d.toISOString().replace(/\.\d{3}Z$/, '');
 
+    const emailLine = cleanEmail ? `\n📧 Email: ${cleanEmail}` : '';
+
     const event = {
       summary: `Barbería: ${service} - ${name}`,
       location: 'Mr Johns Barbier',
-      description: `👤 Cliente: ${name}\n📱 WhatsApp: ${whatsapp}\n📧 Email: ${email}\n✂️ Servicio: ${service}`,
+      description: `👤 Cliente: ${name}\n📱 WhatsApp: ${whatsapp}${emailLine}\n✂️ Servicio: ${service}`,
       start: {
         dateTime: formatLocalISO(startDate),
         timeZone: 'America/Costa_Rica',

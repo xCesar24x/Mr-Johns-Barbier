@@ -377,10 +377,13 @@ export default function BookingSystem() {
                   </div>
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs uppercase tracking-widest text-gold font-bold">Correo Electrónico</label>
+                  <div className="flex justify-between items-center">
+                    <label className="text-xs uppercase tracking-widest text-gold font-bold">Correo Electrónico</label>
+                    <span className="text-[10px] text-parchment/40 font-sans uppercase tracking-wider">Opcional</span>
+                  </div>
                   <div className="relative">
                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-white/20" size={16} />
-                    <input required type="email" placeholder="email@ejemplo.com" className="w-full bg-white/5 border border-white/10 rounded-sm py-3 pl-10 pr-4 text-parchment focus:border-gold outline-none transition-colors" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} />
+                    <input type="email" placeholder="email@ejemplo.com (opcional)" className="w-full bg-white/5 border border-white/10 rounded-sm py-3 pl-10 pr-4 text-parchment focus:border-gold outline-none transition-colors" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} />
                   </div>
                 </div>
                 <div className="space-y-2">
