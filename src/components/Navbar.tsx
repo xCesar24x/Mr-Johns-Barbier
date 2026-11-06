@@ -8,11 +8,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import { prefixPath } from "@/lib/utils";
 
 const navLinks = [
-  { name: "Inicio", href: "#inicio" },
-  { name: "Historia", href: "#historia" },
-  { name: "Servicios", href: "#servicios" },
-  { name: "Galería", href: "#galeria" },
-  { name: "Reservar", href: "#reservar" },
+  { name: "Inicio", href: "/#inicio" },
+  { name: "Historia", href: "/#historia" },
+  { name: "Servicios", href: "/#servicios" },
+  { name: "Galería", href: "/#galeria" },
+  { name: "Club Fidelidad", href: "/fidelidad" },
+  { name: "Reservar", href: "/#reservar" },
 ];
 
 export default function Navbar() {

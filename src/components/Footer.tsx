@@ -58,11 +58,12 @@ export default function Footer() {
           <div className="lg:pl-8">
             <h4 className="text-gold font-serif text-xl mb-6 uppercase tracking-widest text-sm font-bold">Navegación</h4>
             <ul className="space-y-4 font-sans text-xs uppercase tracking-[0.2em] font-bold">
-              <li><Link href="#inicio" className="hover:text-gold transition-colors">Inicio</Link></li>
-              <li><Link href="#historia" className="hover:text-gold transition-colors">Historia</Link></li>
-              <li><Link href="#servicios" className="hover:text-gold transition-colors">Servicios</Link></li>
-              <li><Link href="#galeria" className="hover:text-gold transition-colors">Galería</Link></li>
-              <li><Link href="#reservar" className="hover:text-gold transition-colors">Citas</Link></li>
+              <li><Link href="/#inicio" className="hover:text-gold transition-colors">Inicio</Link></li>
+              <li><Link href="/#historia" className="hover:text-gold transition-colors">Historia</Link></li>
+              <li><Link href="/#servicios" className="hover:text-gold transition-colors">Servicios</Link></li>
+              <li><Link href="/#galeria" className="hover:text-gold transition-colors">Galería</Link></li>
+              <li><Link href="/fidelidad" className="text-gold hover:text-bronze transition-colors flex items-center gap-1">★ Club Fidelidad</Link></li>
+              <li><Link href="/#reservar" className="hover:text-gold transition-colors">Citas</Link></li>
             </ul>
           </div>
 
