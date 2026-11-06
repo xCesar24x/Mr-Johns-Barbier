@@ -130,12 +130,20 @@ export async function GET(request: Request) {
     const topServiceEntry = Object.entries(serviceFrequency).sort((a, b) => b[1] - a[1])[0];
     const favoriteService = topServiceEntry ? topServiceEntry[0] : 'Corte';
 
-    // 5. Cálculo del programa de fidelidad (10 cortes -> 11vo gratis)
+    // 5. Cálculo del programa de fidelidad (Ciclo de 11 cortes: 10 pagados + 11vo de regalo)
+    // Ejemplos:
+    // Corte 10: 10 sellos ganados, tiene derecho al 11vo gratis.
+    // Corte 11: Se canjea el corte gratis (completa el ciclo 1).
+    // Corte 12: Vuelve a empezar con sello #1 (Ciclo 2: Nivel 2).
+    const cycleLength = 11; // 10 pagados + 1 gratis
+    const completedCycles = Math.floor(qualifyingCutsCount / cycleLength);
+    const positionInCycle = qualifyingCutsCount % cycleLength;
+
+    // Si lleva 10 en el ciclo actual, el próximo (el 11) es gratis
+    const hasFreeCutEarned = positionInCycle === 10;
+    const currentStamps = hasFreeCutEarned ? 10 : (positionInCycle > 10 ? 10 : positionInCycle);
     const stampsTarget = 10;
-    const currentCycleStamps = qualifyingCutsCount % stampsTarget;
-    const completedCycles = Math.floor(qualifyingCutsCount / stampsTarget);
-    const hasFreeCutEarned = qualifyingCutsCount > 0 && currentCycleStamps === 0;
-    const stampsRemaining = hasFreeCutEarned ? 0 : stampsTarget - currentCycleStamps;
+    const stampsRemaining = hasFreeCutEarned ? 0 : stampsTarget - currentStamps;
 
     return NextResponse.json({
       found: true,
@@ -145,7 +153,7 @@ export async function GET(request: Request) {
       },
       loyalty: {
         totalCuts: qualifyingCutsCount,
-        currentStamps: hasFreeCutEarned ? stampsTarget : currentCycleStamps,
+        currentStamps,
         stampsTarget,
         stampsRemaining,
         completedCycles,
