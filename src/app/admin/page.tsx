@@ -81,9 +81,9 @@ export default function AdminDashboard() {
     
     let message = "";
     if (type === "confirm") {
-      message = `Hola Sr(a). *${booking.name}*, le saluda Jonathan de Mr. John's Barbier. 💈\n\nLe confirmo que su cita para el día *${dateStr}* a las *${booking.time}* para ${serviceLabel} *${booking.service}* ha sido *confirmada* con éxito. 👍\n\n¡Le esperamos!`;
+      message = `Hola Sr(a). *${booking.name}*, le saluda Jonathan de *Mr. John's Barbier*.\n\nLe confirmo que su cita para el día *${dateStr}* a las *${booking.time}* para ${serviceLabel} *${booking.service}* ha sido *confirmada* con éxito.\n\n¡Le esperamos!`;
     } else {
-      message = `Hola Sr(a). *${booking.name}*, le saluda Jonathan de Mr. John's Barbier. 💈\n\nLamentablemente, por motivos de fuerza mayor no podré atenderle en su cita programada para el día *${dateStr}* a las *${booking.time}* (${isMultiple ? 'los servicios de ' : ''}*${booking.service}*). 😔\n\n¿Le quedaría bien si la reprogramamos para otra hora o día? Quedo a su disposición para coordinar.`;
+      message = `Hola Sr(a). *${booking.name}*, le saluda Jonathan de *Mr. John's Barbier*.\n\nLamentablemente, por motivos de fuerza mayor no podré atenderle en su cita programada para el día *${dateStr}* a las *${booking.time}* (${isMultiple ? 'los servicios de ' : ''}*${booking.service}*).\n\n¿Le quedaría bien si la reprogramamos para otra hora o día? Quedo a su disposición para coordinar.`;
     }
     
     const encodedText = encodeURIComponent(message);
@@ -93,7 +93,7 @@ export default function AdminDashboard() {
     } else if (appType === 'personal') {
       return `whatsapp-consumer://send?phone=${phoneWithCountry}&text=${encodedText}`;
     } else {
-      return `https://wa.me/${phoneWithCountry}?text=${encodedText}`;
+      return `https://api.whatsapp.com/send?phone=${phoneWithCountry}&text=${encodedText}`;
     }
   };
 
