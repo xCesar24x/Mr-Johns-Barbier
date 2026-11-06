@@ -158,9 +158,50 @@ export default function ClientPortal() {
             </form>
 
             <div className="pt-2 border-t border-white/5 text-center">
-              <p className="text-[10px] text-parchment/40">
+              <p className="text-[10px] text-parchment/40 mb-3">
                 ¿Aún no tienes citas? <Link href="/#reservar" className="text-gold hover:underline font-bold">Reserva tu primer corte aquí</Link>.
               </p>
+
+              {/* Botones de demostración rápida para probar los 4 niveles */}
+              <div className="pt-3 border-t border-white/10 text-left">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-gold/80 block mb-2">
+                  Probar demostración de niveles en 1 clic:
+                </span>
+                <div className="grid grid-cols-2 gap-2 text-[11px]">
+                  <button
+                    type="button"
+                    onClick={() => { setPhoneNumber("11111111"); }}
+                    className="p-2 bg-white/5 hover:bg-gold/20 border border-white/10 hover:border-gold/50 rounded-sm text-left transition-all"
+                  >
+                    <span className="font-bold text-gold block">Nivel 1 (Inicial)</span>
+                    <span className="text-[10px] text-parchment/60 font-mono">3 de 10 cortes</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setPhoneNumber("22222222"); }}
+                    className="p-2 bg-gold/15 hover:bg-gold/25 border border-gold/40 rounded-sm text-left transition-all"
+                  >
+                    <span className="font-bold text-gold block">Corte #11 Gratis</span>
+                    <span className="text-[10px] text-parchment/80 font-mono">10 cortes completos</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setPhoneNumber("33333333"); }}
+                    className="p-2 bg-white/5 hover:bg-gold/20 border border-white/10 hover:border-gold/50 rounded-sm text-left transition-all"
+                  >
+                    <span className="font-bold text-gold block">Nivel 2 (Reiniciado)</span>
+                    <span className="text-[10px] text-parchment/60 font-mono">14 cortes totales</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setPhoneNumber("44444444"); }}
+                    className="p-2 bg-white/5 hover:bg-gold/20 border border-white/10 hover:border-gold/50 rounded-sm text-left transition-all"
+                  >
+                    <span className="font-bold text-gold block">Nivel 3 (VIP)</span>
+                    <span className="text-[10px] text-parchment/60 font-mono">25 cortes totales</span>
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         )}
