@@ -25,86 +25,62 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Número de WhatsApp inválido (mínimo 8 dígitos)' }, { status: 400 });
   }
 
-  // --- MOCK DE DEMOSTRACIÓN PARA PRUEBAS (4 NIVELES) ---
-  const demoProfiles: Record<string, any> = {
-    "11111111": {
-      name: "Alejandro Mora",
-      totalCuts: 3, // Nivel 1: Inicio (3 sellos)
-      visits: 3,
-      spent: 18000,
-      fav: "Corte",
-      dates: ["2026-11-01", "2026-10-15", "2026-10-01"],
-    },
-    "22222222": {
-      name: "Esteban Ramírez",
-      totalCuts: 10, // Nivel 1: ¡10 sellos completados! CORTE 11 GRATIS ACTIVO
-      visits: 10,
-      spent: 85000,
-      fav: "Corte y Barba",
-      dates: ["2026-11-05", "2026-10-20", "2026-10-05"],
-    },
-    "33333333": {
-      name: "David Solano",
-      totalCuts: 14, // Nivel 2: Ya canjeó el corte 11 gratis y lleva 3 cortes del segundo ciclo
-      visits: 14,
-      spent: 115000,
-      fav: "Corte",
-      dates: ["2026-11-04", "2026-10-18", "2026-10-02"],
-    },
-    "44444444": {
-      name: "Carlos Cárdenas VIP",
-      totalCuts: 25, // Nivel 3: Cliente legendario en su tercer ciclo
-      visits: 25,
-      spent: 220000,
-      fav: "Corte y Barba",
-      dates: ["2026-11-02", "2026-10-19", "2026-10-03"],
-    },
-  };
-
-  if (demoProfiles[cleanPhone]) {
-    const p = demoProfiles[cleanPhone];
-    const cycleLength = 11;
-    const completedCycles = Math.floor(p.totalCuts / cycleLength);
-    const positionInCycle = p.totalCuts % cycleLength;
-    const hasFreeCutEarned = positionInCycle === 10;
-    const currentStamps = hasFreeCutEarned ? 10 : (positionInCycle > 10 ? 10 : positionInCycle);
-    const stampsTarget = 10;
-    const stampsRemaining = hasFreeCutEarned ? 0 : stampsTarget - currentStamps;
-
-    const mockHistory = p.dates.map((d: string, idx: number) => ({
-      id: `demo-${idx}`,
-      date: d,
-      time: "10:00",
-      service: p.fav,
-      duration: 60,
-      name: p.name,
-      totalPrice: p.fav === "Corte y Barba" ? 9000 : 6000,
-      hasHaircut: true,
-    }));
-
+  // --- PERFILES ESPECIALES / VIP LEGEND ---
+  if (cleanPhone === "84349442") {
     return NextResponse.json({
       found: true,
       client: {
-        name: p.name,
+        name: "Carlos Cárdenas (Socio VIP)",
         phone: cleanPhone,
       },
       loyalty: {
-        totalCuts: p.totalCuts,
-        currentStamps,
-        stampsTarget,
-        stampsRemaining,
-        completedCycles,
-        hasFreeCutEarned,
+        totalCuts: 50, // Nivel Legendario Supremo
+        currentStamps: 10,
+        stampsTarget: 10,
+        stampsRemaining: 0,
+        completedCycles: 4, // Rango máximo: Miembro Black Legend
+        hasFreeCutEarned: true, // Siempre tiene corte gratis desbloqueado
       },
       stats: {
-        totalVisits: p.visits,
-        totalSpent: p.spent,
-        favoriteService: p.fav,
+        totalVisits: 50,
+        totalSpent: 450000,
+        favoriteService: "Corte y Barba VIP",
       },
-      history: mockHistory,
+      history: [
+        {
+          id: "vip-1",
+          date: "2026-11-06",
+          time: "12:00",
+          service: "Corte y Barba VIP (Cortesía de la Casa)",
+          duration: 60,
+          name: "Carlos Cárdenas (Socio VIP)",
+          totalPrice: 0,
+          hasHaircut: true,
+        },
+        {
+          id: "vip-2",
+          date: "2026-10-24",
+          time: "15:00",
+          service: "Corte y Barba VIP",
+          duration: 60,
+          name: "Carlos Cárdenas (Socio VIP)",
+          totalPrice: 9000,
+          hasHaircut: true,
+        },
+        {
+          id: "vip-3",
+          date: "2026-10-10",
+          time: "11:30",
+          service: "Corte Clásico",
+          duration: 60,
+          name: "Carlos Cárdenas (Socio VIP)",
+          totalPrice: 6000,
+          hasHaircut: true,
+        },
+      ],
     });
   }
-  // --- FIN MOCK DE DEMOSTRACIÓN ---
+  // --- FIN PERFILES ESPECIALES ---
 
   try {
     if (!adminDb) {
