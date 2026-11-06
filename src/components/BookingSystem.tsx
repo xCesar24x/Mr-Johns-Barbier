@@ -165,11 +165,10 @@ export default function BookingSystem() {
   }, [isClient, isDayClosed, selectedDate, currentDuration, today, occupiedSlots]);
 
   useEffect(() => {
-    if (selectedTime && isTimeDisabled(selectedTime)) {
+    if (!isPreviewOpen && !isSuccess && !isSubmitting && selectedTime && isTimeDisabled(selectedTime)) {
       setSelectedTime(null);
-      setIsPreviewOpen(false);
     }
-  }, [selectedTime, isTimeDisabled]);
+  }, [selectedTime, isTimeDisabled, isPreviewOpen, isSuccess, isSubmitting]);
 
   const handleDateSelect = (date: Date) => {
     setSelectedDate(date);
@@ -188,7 +187,15 @@ export default function BookingSystem() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!canSubmit) return;
+    setIsSuccess(false);
     setIsPreviewOpen(true);
+  };
+
+  const getWhatsAppConfirmUrl = () => {
+    const servicesString = selectedServices.join(", ");
+    const durText = formatDuration(currentDuration);
+    const message = `Hola Mr. John's, deseo confirmar mi cita. \n\n💈 *Detalles de la Cita* 💈\n👤 *Nombre:* ${formData.name}\n📅 *Fecha:* ${format(selectedDate, "PPP", { locale: es })}\n⏰ *Hora:* ${selectedTime} (${durText})\n✂️ *Servicios:* ${servicesString}\n💰 *Total:* ₡${totalPrice.toLocaleString()}\n📱 *WhatsApp:* ${formData.whatsapp}`;
+    return `https://wa.me/50672429342?text=${encodeURIComponent(message)}`;
   };
 
   const confirmAndSend = async () => {
@@ -220,15 +227,14 @@ export default function BookingSystem() {
         return;
       }
 
-      // 2. Open WhatsApp for final confirmation
-      const durText = formatDuration(currentDuration);
-      const message = `Hola Mr. John's, deseo confirmar mi cita. \n\n💈 *Detalles de la Cita* 💈\n👤 *Nombre:* ${formData.name}\n📅 *Fecha:* ${format(selectedDate, "PPP", { locale: es })}\n⏰ *Hora:* ${selectedTime} (${durText})\n✂️ *Servicios:* ${servicesString}\n💰 *Total:* ₡${totalPrice.toLocaleString()}\n📱 *WhatsApp:* ${formData.whatsapp}`;
-      const encodedMessage = encodeURIComponent(message);
-      window.open(`https://wa.me/50672429342?text=${encodedMessage}`, "_blank");
-      
-      // 3. Show success state with the Calendar button
+      // 2. Show success state first so the confirmation modal stays visible
       setIsSuccess(true);
-      // Reload occupied slots so the booked slot is blocked immediately
+
+      // 3. Open WhatsApp for final confirmation (if not blocked by mobile popup blocker)
+      const waUrl = getWhatsAppConfirmUrl();
+      window.open(waUrl, "_blank");
+      
+      // 4. Reload occupied slots so the booked slot is blocked immediately in background
       try {
         const dateKey = format(selectedDate, 'yyyy-MM-dd');
         const resCheck = await fetch(`/api/bookings/check?date=${dateKey}`);
@@ -505,7 +511,16 @@ export default function BookingSystem() {
         </div>
       </div>
 
-      <Dialog.Root open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
+      <Dialog.Root
+        open={isPreviewOpen}
+        onOpenChange={(open) => {
+          if (!open && isSuccess) {
+            handleCloseSuccess();
+          } else {
+            setIsPreviewOpen(open);
+          }
+        }}
+      >
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] animate-in fade-in duration-300" />
           <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-md z-[101] animate-in zoom-in-95 duration-300 focus:outline-none">
@@ -518,10 +533,18 @@ export default function BookingSystem() {
                   <>
                     <Dialog.Title className="text-3xl font-serif text-charcoal">¡Reserva Exitosa!</Dialog.Title>
                     <div className="space-y-4 py-6 border-y border-charcoal/10">
-                      <p className="text-charcoal/80 font-sans text-lg">Su mensaje ha sido enviado por WhatsApp y su cita está registrada en nuestro sistema.</p>
+                      <p className="text-charcoal/80 font-sans text-lg">Su cita para el <span className="font-bold text-charcoal">{format(selectedDate, "d 'de' MMMM", { locale: es })}</span> a las <span className="font-bold text-charcoal">{selectedTime}</span> ya quedó registrada en nuestro sistema.</p>
                       <p className="text-sm text-charcoal/60 font-bold uppercase tracking-widest mt-4">¡Te esperamos!</p>
                     </div>
                     <div className="space-y-3">
+                      <a
+                        href={getWhatsAppConfirmUrl()}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-full bg-[#25D366] text-white py-4 rounded-sm font-bold uppercase tracking-widest hover:opacity-90 transition-all flex items-center justify-center gap-3 shadow-lg"
+                      >
+                        <WhatsAppIcon size={20} /> Enviar Comprobante por WhatsApp
+                      </a>
                       <a 
                         href={getGoogleCalendarUrl()} 
                         target="_blank" 
