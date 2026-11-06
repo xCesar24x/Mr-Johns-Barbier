@@ -22,11 +22,14 @@ export default function LoyaltyCard({
   const remaining = stampsTarget - currentStamps;
 
   return (
-    <div className="relative overflow-hidden rounded-sm border-2 border-gold/40 shadow-2xl texture-leather">
-      {/* Capa de oscurecimiento y difuminado profundo para máxima legibilidad sobre el cuero */}
-      <div className="absolute inset-0 bg-[#0f0e0d]/90 backdrop-blur-md" />
+    <div 
+      className="relative overflow-hidden rounded-sm border-2 border-gold/40 shadow-2xl bg-cover bg-center"
+      style={{ backgroundImage: `url('/images/loyalty-card-bg.jpg')` }}
+    >
+      {/* Overlay sutil para garantizar contraste perfecto sin perder la textura */}
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-[1px]" />
 
-      {/* Decorative Gold Elements */}
+      {/* Decorative Gold Glows */}
       <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-gold/15 blur-3xl z-0" />
       <div className="pointer-events-none absolute -bottom-16 -left-16 h-48 w-48 rounded-full bg-gold/10 blur-3xl z-0" />
 
