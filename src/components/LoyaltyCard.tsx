@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Scissors, Gift, Award, Sparkles, Check } from "lucide-react";
+import { Scissors, Gift, Award, Sparkles, Check, Crown, Shield, Star, Gem } from "lucide-react";
 
 interface LoyaltyCardProps {
   currentStamps: number;
@@ -10,6 +10,40 @@ interface LoyaltyCardProps {
   completedCycles: number;
   clientName: string;
 }
+
+// Jerarquía de Rangos y Membresías de Mr. John's
+const getTierInfo = (completedCycles: number) => {
+  if (completedCycles === 0) {
+    return {
+      name: "Miembro Classic",
+      icon: Shield,
+      badgeColor: "bg-white/10 text-parchment/80 border-white/20",
+      description: "Iniciando el camino del caballero",
+    };
+  }
+  if (completedCycles === 1) {
+    return {
+      name: "Miembro Silver",
+      icon: Star,
+      badgeColor: "bg-slate-300/20 text-slate-200 border-slate-300/40",
+      description: "1 corte de regalo canjeado",
+    };
+  }
+  if (completedCycles === 2) {
+    return {
+      name: "Miembro Gold VIP",
+      icon: Crown,
+      badgeColor: "bg-gold/25 text-gold border-gold/50",
+      description: "2 cortes de regalo canjeados",
+    };
+  }
+  return {
+    name: "Miembro Black Legend",
+    icon: Gem,
+    badgeColor: "bg-amber-400/20 text-amber-300 border-amber-400/50 shadow-gold/20 shadow-md",
+    description: `${completedCycles} cortes de regalo canjeados`,
+  };
+};
 
 export default function LoyaltyCard({
   currentStamps,
@@ -20,6 +54,8 @@ export default function LoyaltyCard({
 }: LoyaltyCardProps) {
   const stamps = Array.from({ length: stampsTarget }, (_, i) => i + 1);
   const remaining = stampsTarget - currentStamps;
+  const tier = getTierInfo(completedCycles);
+  const TierIcon = tier.icon;
 
   return (
     <div className="relative overflow-hidden rounded-sm border-2 border-gold/50 shadow-2xl bg-gradient-to-br from-[#1a1815] via-[#121110] to-[#0d0c0b]">
@@ -48,11 +84,9 @@ export default function LoyaltyCard({
                 <span className="text-[10px] font-sans font-bold uppercase tracking-[0.25em] text-gold">
                   Gentleman’s Club
                 </span>
-                {completedCycles > 0 && (
-                  <span className="rounded-full bg-gold/20 px-2 py-0.5 text-[9px] font-bold text-gold border border-gold/40">
-                    Nivel {completedCycles + 1}
-                  </span>
-                )}
+                <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-bold border ${tier.badgeColor}`}>
+                  <TierIcon size={11} /> {tier.name}
+                </span>
               </div>
               <h3 className="font-serif text-2xl font-bold text-parchment">
                 Tarjeta de Fidelidad
@@ -159,8 +193,32 @@ export default function LoyaltyCard({
           </div>
         </div>
 
+        {/* Jerarquía de Membresías Explicada */}
+        <div className="mt-5 pt-3 border-t border-white/10">
+          <div className="flex flex-wrap items-center justify-between gap-2 text-[10px]">
+            <span className="text-parchment/50 uppercase tracking-widest font-bold">Rango de Membresía:</span>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className={`px-2 py-0.5 rounded-sm border ${completedCycles === 0 ? "border-gold text-gold font-bold bg-gold/15" : "border-white/10 text-parchment/40"}`}>
+                Classic (1°-10° corte)
+              </span>
+              <span className="text-parchment/20">→</span>
+              <span className={`px-2 py-0.5 rounded-sm border ${completedCycles === 1 ? "border-slate-300 text-slate-200 font-bold bg-slate-300/15" : "border-white/10 text-parchment/40"}`}>
+                Silver (+11 cortes)
+              </span>
+              <span className="text-parchment/20">→</span>
+              <span className={`px-2 py-0.5 rounded-sm border ${completedCycles === 2 ? "border-gold text-gold font-bold bg-gold/15" : "border-white/10 text-parchment/40"}`}>
+                Gold VIP (+22 cortes)
+              </span>
+              <span className="text-parchment/20">→</span>
+              <span className={`px-2 py-0.5 rounded-sm border ${completedCycles >= 3 ? "border-amber-400 text-amber-300 font-bold bg-amber-400/15" : "border-white/10 text-parchment/40"}`}>
+                Black Legend (+33)
+              </span>
+            </div>
+          </div>
+        </div>
+
         {/* Footer Info */}
-        <div className="mt-6 pt-4 border-t border-white/10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 text-[11px] text-parchment/60">
+        <div className="mt-4 pt-3 border-t border-white/5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 text-[11px] text-parchment/60">
           <p>• Válido en servicios de Corte y combos con Corte en Mr. John&apos;s Barbier.</p>
           <p className="font-mono text-gold/80 font-bold">San Ramón, Costa Rica</p>
         </div>
