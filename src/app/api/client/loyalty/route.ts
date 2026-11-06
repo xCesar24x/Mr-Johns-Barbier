@@ -25,7 +25,8 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Número de WhatsApp inválido (mínimo 8 dígitos)' }, { status: 400 });
   }
 
-  // --- PERFILES ESPECIALES / VIP LEGEND ---
+  // --- PERFIL ESPECIAL: CÉSAR MADRIGAL (SOCIO FUNDADOR VIP) ---
+  // Mantiene su reserva real en la base de datos intacta, pero la interfaz le otorga rango Black Legend permanente
   if (cleanPhone === "84349442") {
     return NextResponse.json({
       found: true,
@@ -34,7 +35,7 @@ export async function GET(request: Request) {
         phone: cleanPhone,
       },
       loyalty: {
-        totalCuts: 50, // Nivel Legendario Supremo
+        totalCuts: 50, // Rango supremo por autoría del sistema
         currentStamps: 10,
         stampsTarget: 10,
         stampsRemaining: 0,
@@ -42,39 +43,19 @@ export async function GET(request: Request) {
         hasFreeCutEarned: true, // Siempre tiene corte gratis desbloqueado
       },
       stats: {
-        totalVisits: 50,
-        totalSpent: 450000,
-        favoriteService: "Corte y Barba VIP",
+        totalVisits: 1, // Tu cita real en el sistema
+        totalSpent: 9000,
+        favoriteService: "Corte y Barba",
       },
       history: [
         {
-          id: "vip-1",
-          date: "2026-11-06",
+          id: "real-3cllkI9hEzNcTmNy2jXK",
+          date: "2026-07-03",
           time: "12:00",
-          service: "Corte y Barba VIP (Cortesía de la Casa)",
+          service: "Corte y Barba (Cortesía de la Casa)",
           duration: 60,
-          name: "César Madrigal (Socio Fundador VIP)",
+          name: "César Madrigal",
           totalPrice: 0,
-          hasHaircut: true,
-        },
-        {
-          id: "vip-2",
-          date: "2026-10-24",
-          time: "15:00",
-          service: "Corte y Barba VIP",
-          duration: 60,
-          name: "César Madrigal (Socio Fundador VIP)",
-          totalPrice: 9000,
-          hasHaircut: true,
-        },
-        {
-          id: "vip-3",
-          date: "2026-10-10",
-          time: "11:30",
-          service: "Corte Clásico",
-          duration: 60,
-          name: "César Madrigal (Socio Fundador VIP)",
-          totalPrice: 6000,
           hasHaircut: true,
         },
       ],
