@@ -69,8 +69,16 @@ export default function ClientPortal() {
   };
 
   return (
-    <div className="min-h-screen bg-charcoal texture-leather text-parchment py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-5xl mx-auto space-y-8">
+    <div className="min-h-screen bg-charcoal text-parchment relative overflow-x-hidden">
+      {/* Fondo fotográfico ambiental de barbería con gradiente oscuro y overlay */}
+      <div 
+        className="fixed inset-0 bg-cover bg-center bg-no-repeat pointer-events-none z-0 scale-105"
+        style={{ backgroundImage: `url('/images/fondoclientes.png')` }}
+      />
+      <div className="fixed inset-0 bg-gradient-to-b from-charcoal/95 via-charcoal/88 to-charcoal/98 pointer-events-none z-0 backdrop-blur-[2px]" />
+
+      <div className="relative z-10 py-8 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-5xl mx-auto space-y-8">
         
         {/* Top Navigation */}
         <div className="flex items-center justify-between border-b border-white/10 pb-4">
@@ -306,6 +314,7 @@ export default function ClientPortal() {
           </div>
         )}
 
+      </div>
       </div>
     </div>
   );

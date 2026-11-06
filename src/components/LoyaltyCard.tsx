@@ -22,12 +22,13 @@ export default function LoyaltyCard({
   const remaining = stampsTarget - currentStamps;
 
   return (
-    <div 
-      className="relative overflow-hidden rounded-sm border-2 border-gold/40 shadow-2xl bg-cover bg-center"
-      style={{ backgroundImage: `url('/images/loyalty-card-bg.jpg')` }}
-    >
-      {/* Overlay sutil para garantizar contraste perfecto sin perder la textura */}
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-[1px]" />
+    <div className="relative overflow-hidden rounded-sm border-2 border-gold/50 shadow-2xl bg-gradient-to-br from-[#1a1815] via-[#121110] to-[#0d0c0b]">
+      {/* Detalle visual sutil de fondo */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center opacity-15 mix-blend-overlay pointer-events-none"
+        style={{ backgroundImage: `url('/images/fondoclientes.png')` }}
+      />
+      <div className="absolute inset-0 bg-gradient-to-r from-gold/5 via-transparent to-gold/5 pointer-events-none" />
 
       {/* Decorative Gold Glows */}
       <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-gold/15 blur-3xl z-0" />
