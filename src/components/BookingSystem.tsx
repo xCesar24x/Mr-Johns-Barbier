@@ -194,19 +194,21 @@ export default function BookingSystem() {
   const getWhatsAppConfirmUrl = () => {
     const servicesString = selectedServices.join(", ");
     const durText = formatDuration(currentDuration);
-    const message = [
-      `Hola *Mr. John's Barbier*, deseo confirmar mi cita:`,
-      ``,
-      `*DETALLES DE LA CITA*`,
-      `- *Cliente:* ${formData.name}`,
-      `- *Fecha:* ${format(selectedDate, "PPP", { locale: es })}`,
-      `- *Hora:* ${selectedTime} (${durText})`,
-      `- *Servicios:* ${servicesString}`,
-      `- *Total:* ₡${totalPrice.toLocaleString()}`,
-      `- *WhatsApp:* ${formData.whatsapp}`,
-      ``,
-      `¡Muchas gracias!`
-    ].join("\n");
+    const dateFormatted = format(selectedDate, "d 'de' MMMM, yyyy", { locale: es });
+    const formattedTotal = totalPrice.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+
+    const message = `Hola Mr. John's Barbier, deseo confirmar mi cita:
+
+DETALLES DE LA CITA
+Cliente: ${formData.name}
+Fecha: ${dateFormatted}
+Hora: ${selectedTime} (${durText})
+Servicios: ${servicesString}
+Total: CRC ${formattedTotal}
+WhatsApp: ${formData.whatsapp}
+
+Muchas gracias!`;
+
     return `https://api.whatsapp.com/send?phone=50672429342&text=${encodeURIComponent(message)}`;
   };
 
