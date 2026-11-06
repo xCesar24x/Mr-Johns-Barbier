@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { DEFAULT_SERVICES } from "@/lib/defaultServices";
 import { ServiceItem } from "@/types/service";
 import ServiceIcon from "@/components/ServiceIcon";
+import { formatColonPrice } from "@/lib/utils";
 
 export default function Services() {
   const [services, setServices] = useState<ServiceItem[]>(DEFAULT_SERVICES);
@@ -86,7 +87,7 @@ export default function Services() {
               
               <div className="flex justify-between items-center pt-6 border-t border-white/10">
                 <span className="text-xl font-serif text-gold font-bold">
-                  ₡{service.price.toLocaleString()}
+                  ₡{formatColonPrice(service.price)}
                 </span>
                 <a 
                   href="#reservar"

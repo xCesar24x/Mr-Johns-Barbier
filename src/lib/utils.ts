@@ -18,6 +18,10 @@ export const formatDateKey = (date: Date | string) => {
   return `${year}-${month}-${day}`;
 };
 
+export const formatColonPrice = (price: number): string => {
+  return (price || 0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+};
+
 export const SERVICE_PRICES: Record<string, number> = {
   "Corte": 6000,
   "Barba": 5000,
