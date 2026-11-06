@@ -30,7 +30,7 @@ export async function GET(request: Request) {
     return NextResponse.json({
       found: true,
       client: {
-        name: "Carlos Cárdenas (Socio VIP)",
+        name: "César Madrigal (Socio Fundador VIP)",
         phone: cleanPhone,
       },
       loyalty: {
@@ -53,7 +53,7 @@ export async function GET(request: Request) {
           time: "12:00",
           service: "Corte y Barba VIP (Cortesía de la Casa)",
           duration: 60,
-          name: "Carlos Cárdenas (Socio VIP)",
+          name: "César Madrigal (Socio Fundador VIP)",
           totalPrice: 0,
           hasHaircut: true,
         },
@@ -63,7 +63,7 @@ export async function GET(request: Request) {
           time: "15:00",
           service: "Corte y Barba VIP",
           duration: 60,
-          name: "Carlos Cárdenas (Socio VIP)",
+          name: "César Madrigal (Socio Fundador VIP)",
           totalPrice: 9000,
           hasHaircut: true,
         },
@@ -73,7 +73,7 @@ export async function GET(request: Request) {
           time: "11:30",
           service: "Corte Clásico",
           duration: 60,
-          name: "Carlos Cárdenas (Socio VIP)",
+          name: "César Madrigal (Socio Fundador VIP)",
           totalPrice: 6000,
           hasHaircut: true,
         },
