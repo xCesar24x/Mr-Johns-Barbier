@@ -221,60 +221,41 @@ export default function AdminDashboard() {
   const resetClientPin = async (booking: any) => {
     if (!confirm(`¿Restablecer el PIN de Fidelidad para ${booking.name}? Podrá crear un PIN nuevo la próxima vez que entre al portal.`)) return;
     try {
-      const res = await fetch('/api/admin/bookings', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'reset-client-pin',
-          phone: booking.whatsapp,
-          name: booking.name,
-        })
-      });
-      const data = await res.json();
-      if (data.success) {
-        showToast(
-          data.deletedCount > 0
-            ? `🔑 PIN de fidelidad restablecido para ${booking.name}`
-            : `ℹ️ ${booking.name} aún no tenía un PIN creado`
-        );
-        const deletedCount = await executePinReset(booking.whatsapp, booking.name);
-        showToast(
-          deletedCount > 0
-            ? `🔑 PIN de fidelidad restablecido para ${booking.name}`
-            : `ℹ️ ${booking.name} aún no tenía un PIN creado`
-        );
-      } catch (err: any) {
-        alert(err.message || "Error al restablecer el PIN");
-      }
-    };
+      const deletedCount = await executePinReset(booking.whatsapp, booking.name);
+      showToast(
+        deletedCount > 0
+          ? `🔑 PIN de fidelidad restablecido para ${booking.name}`
+          : `ℹ️ ${booking.name} aún no tenía un PIN creado`
+      );
+    } catch (err: any) {
+      alert(err.message || "Error al restablecer el PIN");
+    }
+  };
 
-    const handleManualPinReset = async (e: React.FormEvent) => {
-      e.preventDefault();
-      const cleanPhone = normalizePhone(pinResetPhone);
-      if (cleanPhone.length < 8) {
-        alert("Ingresa un número de WhatsApp válido (mínimo 8 dígitos).");
-        return;
-      }
+  const handleManualPinReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const cleanPhone = normalizePhone(pinResetPhone);
+    if (cleanPhone.length < 8) {
+      alert("Ingresa un número de WhatsApp válido (mínimo 8 dígitos).");
+      return;
+    }
 
-      setIsResettingPin(true);
-      try {
-        const deletedCount = await executePinReset(cleanPhone, pinResetName.trim());
-        if (deletedCount > 0) {
-          showToast(`🔑 PIN restablecido (${deletedCount} ${deletedCount === 1 ? 'perfil' : 'perfiles'})`);
-          setPinResetPhone("");
-          setPinResetName("");
-        } else {
-          alert(data.error || "No se pudo restablecer el PIN");
-          showToast("ℹ️ No había ningún PIN guardado para ese cliente");
-        }
-      } catch {
-        alert("Error al restablecer el PIN");
-      } catch (err: any) {
-        alert(err.message || "Error al restablecer el PIN");
-      } finally {
-        setIsResettingPin(false);
+    setIsResettingPin(true);
+    try {
+      const deletedCount = await executePinReset(cleanPhone, pinResetName.trim());
+      if (deletedCount > 0) {
+        showToast(`🔑 PIN restablecido (${deletedCount} ${deletedCount === 1 ? 'perfil' : 'perfiles'})`);
+        setPinResetPhone("");
+        setPinResetName("");
+      } else {
+        showToast("ℹ️ No había ningún PIN guardado para ese cliente");
       }
-    };
+    } catch (err: any) {
+      alert(err.message || "Error al restablecer el PIN");
+    } finally {
+      setIsResettingPin(false);
+    }
+  };
 
     const toggleBlockSlot = async (slot: string) => {
       let newBlockedSlots = [...blockedSlots];
@@ -656,7 +637,6 @@ export default function AdminDashboard() {
                             {normalizePhone(booking.whatsapp || '') !== BARBERSHOP_PHONE && (
                               <button
                                 onClick={() => resetClientPin(booking)}
-                                className="p-3 text-gold/40 hover:text-gold hover:bg-gold/10 rounded-sm transition-all"
                                 className="p-3 text-gold/70 hover:text-gold hover:bg-gold/15 rounded-sm transition-all"
                                 title="Restablecer PIN de Fidelidad del cliente"
                               >
