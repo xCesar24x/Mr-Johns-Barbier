@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { adminDb } from '@/lib/firebaseAdmin';
-import { formatDateKey, SERVICE_PRICES } from '@/lib/utils';
+import { formatDateKey, nameMatches, normalizePhone, SERVICE_PRICES } from '@/lib/utils';
 import { google } from 'googleapis';
 
 export const dynamic = 'force-dynamic';
@@ -91,8 +91,30 @@ export async function POST(request: Request) {
     if (!adminDb) {
       return NextResponse.json({ error: 'Database not initialized' }, { status: 500 });
     }
-    const { action, date, bookingId, status, lunchTime, blockedSlots } = await request.json();
+    const { action, date, bookingId, status, lunchTime, blockedSlots, phone, name } = await request.json();
     const dateKey = date ? formatDateKey(date) : null;
+
+    if (action === 'reset-client-pin') {
+      const cleanPhone = normalizePhone(phone || '');
+      const cleanName = (name || '').trim();
+      if (cleanPhone.length < 8) {
+        return NextResponse.json({ error: 'Teléfono inválido' }, { status: 400 });
+      }
+
+      const profilesSnap = await adminDb
+        .collection('client_profiles')
+        .where('phone', '==', cleanPhone)
+        .get();
+
+      const matchingDocs = profilesSnap.docs.filter((doc) => {
+        if (!cleanName) return true;
+        const pName = doc.data()?.name || '';
+        return nameMatches(cleanName, pName) || nameMatches(pName, cleanName);
+      });
+
+      await Promise.all(matchingDocs.map((doc) => doc.ref.delete()));
+      return NextResponse.json({ success: true, deletedCount: matchingDocs.length });
+    }
 
     if (action === 'toggle-day' && dateKey) {
       await adminDb.collection('settings').doc(dateKey).set({ status: status }, { merge: true });

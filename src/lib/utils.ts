@@ -49,3 +49,50 @@ export function getOccupiedSlotsForBooking(time: string, duration: number): stri
   }
   return slots;
 }
+
+export const BARBERSHOP_PHONE = '72429342';
+
+export function normalizePhone(phone: string): string {
+  const digits = (phone || '').replace(/\D/g, '');
+  if (!digits) return '';
+  if (digits.startsWith('00506') && digits.length === 13) {
+    return digits.slice(5);
+  }
+  if (digits.startsWith('506') && digits.length === 11) {
+    return digits.slice(3);
+  }
+  return digits;
+}
+
+const NAME_STOP_WORDS = new Set(['de', 'del', 'la', 'las', 'los', 'y']);
+
+export function tokenizeName(name: string): string[] {
+  const normalized = (name || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .trim();
+
+  if (!normalized) return [];
+  const rawTokens = normalized.split(/\s+/).filter(Boolean);
+  const filtered = rawTokens.filter((t) => !NAME_STOP_WORDS.has(t));
+  return filtered.length > 0 ? filtered : rawTokens;
+}
+
+export function nameMatches(inputName: string, candidateName: string): boolean {
+  const inputTokens = tokenizeName(inputName);
+  const candidateTokens = tokenizeName(candidateName);
+
+  if (inputTokens.length === 0 || candidateTokens.length === 0) return false;
+  if (inputTokens.join('').length < 2) return false;
+
+  const allInputInCandidate = inputTokens.every((t) => candidateTokens.includes(t));
+  if (allInputInCandidate) return true;
+
+  if (candidateTokens.length === 1 && inputTokens.includes(candidateTokens[0])) {
+    return true;
+  }
+
+  return false;
+}
